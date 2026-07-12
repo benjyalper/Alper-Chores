@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "( npx prisma migrate deploy && ( timeout 120 npx prisma db seed || echo 'seed skipped (non-fatal)' ) || echo 'migrate/seed deferred — will retry on next deploy' ) & npm run start",
+    "startCommand": "sh scripts/railway-start.sh",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",

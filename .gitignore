@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build output
+client/dist/
+dist/
+build/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+
+# Vite / PWA generated
+client/dev-dist/

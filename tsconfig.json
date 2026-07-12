@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "paths": {
+      "@shared/*": ["shared/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["shared/**/*.ts", "server/**/*.ts", "prisma/**/*.ts"]
+}

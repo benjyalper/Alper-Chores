@@ -1,0 +1,251 @@
+// Alper Chores — Prisma schema
+// Database: PostgreSQL only.
+//
+// Recurrence model (see README for full explanation):
+//   ChoreTemplate       -> defines a chore ("Feed the dog — morning")
+//   RecurrenceRule      -> defines WHEN it happens (daily / weekly / once ...)
+//   AssignmentRule      -> default responsible member over a date range
+//   ChoreOccurrenceOverride -> per-date deviation (assignee, name, time, cancel)
+//   ChoreCompletion     -> per-date completion status
+//   MealPlan            -> per-date meal details (for meal templates)
+//
+// We DO NOT pre-create years of occurrence rows. A week's occurrences are
+// generated on demand from the rules and merged with dated override /
+// completion / meal rows. Each logical occurrence is identified by a
+// deterministic key: `${choreTemplateId}__${occurrenceDate}` (local ISO date).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum WeekStart {
+  MONDAY
+  SUNDAY
+}
+
+enum Frequency {
+  ONCE
+  DAILY
+  WEEKLY
+  CUSTOM_WEEKLY
+}
+
+enum CompletionStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+enum MealPlanType {
+  HOME_COOKED
+  RESTAURANT
+  TAKEOUT
+  LEFTOVERS
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
+// Core models
+// ---------------------------------------------------------------------------
+
+model Household {
+  id           String    @id @default(cuid())
+  name         String
+  timezone     String    @default("Asia/Jerusalem")
+  weekStartsOn WeekStart @default(MONDAY)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  members    FamilyMember[]
+  categories ChoreCategory[]
+  templates  ChoreTemplate[]
+}
+
+model FamilyMember {
+  id          String   @id @default(cuid())
+  householdId String
+  name        String
+  color       String? // hex color, e.g. "#4F86C6"
+  emoji       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  // Historical references use SetNull so deactivating/deleting a member never
+  // erases history.
+  assignmentRules     AssignmentRule[]
+  occurrenceOverrides ChoreOccurrenceOverride[]
+  completions         ChoreCompletion[]
+  mealPlans           MealPlan[]
+
+  @@index([householdId])
+  @@index([householdId, isActive])
+}
+
+model ChoreCategory {
+  id             String   @id @default(cuid())
+  householdId    String
+  name           String
+  sortOrder      Int      @default(0)
+  isMealCategory Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  household Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  templates ChoreTemplate[]
+
+  @@unique([householdId, name])
+  @@index([householdId])
+  @@index([householdId, sortOrder])
+}
+
+model ChoreTemplate {
+  id            String   @id @default(cuid())
+  householdId   String
+  categoryId    String
+  name          String
+  description   String?
+  defaultTime   String? // "HH:mm" local household time, optional
+  timeSlotLabel String? // e.g. "Morning", "Evening"
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  isMeal        Boolean  @default(false)
+  mealType      MealType? // set when this template is a meal
+  seedKey       String? // stable identifier for idempotent seeding
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  household Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  category  ChoreCategory @relation(fields: [categoryId], references: [id])
+
+  recurrenceRules RecurrenceRule[]
+  overrides       ChoreOccurrenceOverride[]
+  completions     ChoreCompletion[]
+  mealPlans       MealPlan[]
+
+  @@unique([householdId, seedKey])
+  @@index([householdId])
+  @@index([householdId, isActive])
+  @@index([categoryId])
+}
+
+model RecurrenceRule {
+  id              String    @id @default(cuid())
+  choreTemplateId String
+  frequency       Frequency @default(WEEKLY)
+  interval        Int       @default(1) // every N days/weeks
+  daysOfWeek      Int[] // 1=Mon .. 7=Sun (ISO). Empty => derive from startDate weekday
+  startDate       DateTime  @db.Date // local household date (stored at UTC midnight)
+  endDate         DateTime? @db.Date
+  time            String? // "HH:mm" local time; falls back to template.defaultTime
+  timezone        String    @default("Asia/Jerusalem")
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  template        ChoreTemplate    @relation(fields: [choreTemplateId], references: [id], onDelete: Cascade)
+  assignmentRules AssignmentRule[]
+
+  @@index([choreTemplateId])
+  @@index([choreTemplateId, isActive])
+}
+
+model AssignmentRule {
+  id               String    @id @default(cuid())
+  recurrenceRuleId String
+  familyMemberId   String?
+  effectiveFrom    DateTime  @db.Date
+  effectiveUntil   DateTime? @db.Date
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  recurrenceRule RecurrenceRule @relation(fields: [recurrenceRuleId], references: [id], onDelete: Cascade)
+  member         FamilyMember?  @relation(fields: [familyMemberId], references: [id], onDelete: SetNull)
+
+  @@index([recurrenceRuleId])
+  @@index([recurrenceRuleId, effectiveFrom])
+}
+
+model ChoreOccurrenceOverride {
+  id               String   @id @default(cuid())
+  choreTemplateId  String
+  occurrenceDate   DateTime @db.Date // local household date
+  recurrenceRuleId String?
+  assignedMemberId String?
+  hasAssignment    Boolean  @default(false) // distinguishes "set to unassigned" from "not overridden"
+  nameOverride     String?
+  timeOverride     String?
+  isCancelled      Boolean  @default(false)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  template ChoreTemplate @relation(fields: [choreTemplateId], references: [id], onDelete: Cascade)
+  member   FamilyMember? @relation(fields: [assignedMemberId], references: [id], onDelete: SetNull)
+
+  @@unique([choreTemplateId, occurrenceDate])
+  @@index([choreTemplateId])
+  @@index([occurrenceDate])
+}
+
+model ChoreCompletion {
+  id                  String           @id @default(cuid())
+  choreTemplateId     String
+  occurrenceDate      DateTime         @db.Date
+  recurrenceRuleId    String?
+  status              CompletionStatus @default(PENDING)
+  completedAt         DateTime?
+  completedByMemberId String?
+  note                String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  template ChoreTemplate @relation(fields: [choreTemplateId], references: [id], onDelete: Cascade)
+  member   FamilyMember? @relation(fields: [completedByMemberId], references: [id], onDelete: SetNull)
+
+  @@unique([choreTemplateId, occurrenceDate])
+  @@index([choreTemplateId])
+  @@index([occurrenceDate])
+}
+
+model MealPlan {
+  id               String        @id @default(cuid())
+  choreTemplateId  String
+  occurrenceDate   DateTime      @db.Date
+  recurrenceRuleId String?
+  mealType         MealType
+  planType         MealPlanType?
+  assignedMemberId String?
+  description      String?
+  recipeUrl        String?
+  restaurantName   String?
+  restaurantUrl    String?
+  takeoutProvider  String?
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  template ChoreTemplate @relation(fields: [choreTemplateId], references: [id], onDelete: Cascade)
+  member   FamilyMember? @relation(fields: [assignedMemberId], references: [id], onDelete: SetNull)
+
+  @@unique([choreTemplateId, occurrenceDate])
+  @@index([choreTemplateId])
+  @@index([occurrenceDate])
+}

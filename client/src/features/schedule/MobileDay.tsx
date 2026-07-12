@@ -5,11 +5,10 @@ import type {
   OccurrenceDTO,
   WeeklyScheduleDTO,
 } from '@shared/types';
-import { formatDisplayDate } from '@shared/dates';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
 import { getLastDayIndex, setLastDayIndex } from '../../utils/members';
-import { weekdayShort } from '../../utils/weekdays';
+import { weekdayDate, weekdayShort } from '../../utils/format';
 
 interface Props {
   schedule: WeeklyScheduleDTO;
@@ -26,7 +25,7 @@ export function MobileDay({
   onStatus,
   onOpenMeal,
 }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const todayIdx = schedule.days.findIndex((d) => d.isToday);
   const [selected, setSelected] = useState(() => {
     if (todayIdx >= 0) return todayIdx;
@@ -56,13 +55,15 @@ export function MobileDay({
               }`}
               onClick={() => setSelected(i)}
             >
-              <span className="day-pill__name">{weekdayShort(d.weekday)}</span>
+              <span className="day-pill__name">
+                {weekdayShort(d.date, schedule.timezone, code)}
+              </span>
               <span className="day-pill__num">{d.date.slice(8)}</span>
               <span className="day-pill__bar" aria-hidden="true">
                 <span className="day-pill__fill" style={{ width: `${pct}%` }} />
               </span>
               <span className="sr-only">
-                {d.completedCount} of {d.totalCount} done
+                {t('done_count', { done: d.completedCount, total: d.totalCount })}
               </span>
             </button>
           );
@@ -70,7 +71,7 @@ export function MobileDay({
       </div>
 
       <div className="mobile-day__header">
-        <h2>{formatDisplayDate(day.date, schedule.timezone)}</h2>
+        <h2>{weekdayDate(day.date, schedule.timezone, code)}</h2>
         {day.isToday && <span className="week-badge week-badge--current">{t('today')}</span>}
         <span className="mobile-day__progress">
           {day.completedCount}/{day.totalCount}

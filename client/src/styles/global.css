@@ -197,9 +197,18 @@ button {
 .topbar__logo {
   border-radius: 7px;
 }
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .topbar__nav {
   display: flex;
   gap: 4px;
+}
+.lang-toggle {
+  white-space: nowrap;
+  font-weight: 700;
 }
 .nav-link {
   display: inline-flex;
@@ -878,6 +887,11 @@ button {
 .settings-list dt {
   color: var(--text-muted);
   font-weight: 700;
+}
+.lang-choices {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* ---- Mobile day view ---- */

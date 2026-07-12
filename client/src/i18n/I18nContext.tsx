@@ -1,20 +1,91 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
-import { defaultLocale, type Locale } from './strings';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { defaultLocale, locales, type Dir, type Locale } from './strings';
 
-const I18nContext = createContext<Locale>(defaultLocale);
+const STORAGE_KEY = 'alper.lang';
+
+interface I18nValue {
+  code: string;
+  dir: Dir;
+  /** Translate a key, optionally interpolating `{name}`-style params. */
+  t: (key: string, params?: Record<string, string | number>) => string;
+  /** Available languages for a switcher. */
+  languages: { code: string; name: string }[];
+  setLanguage: (code: string) => void;
+  toggle: () => void;
+}
+
+const I18nContext = createContext<I18nValue | null>(null);
+
+function pickInitial(): Locale {
+  if (typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && locales[saved]) return locales[saved];
+  }
+  return defaultLocale;
+}
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const locale = defaultLocale;
+  const [locale, setLocale] = useState<Locale>(() => pickInitial());
+
   useEffect(() => {
-    // Set document direction so a future RTL locale flips the whole layout.
+    // Flip the whole document to LTR/RTL and set the language.
     document.documentElement.dir = locale.dir;
     document.documentElement.lang = locale.code;
   }, [locale]);
-  return <I18nContext.Provider value={locale}>{children}</I18nContext.Provider>;
+
+  const setLanguage = useCallback((code: string) => {
+    const next = locales[code];
+    if (!next) return;
+    localStorage.setItem(STORAGE_KEY, code);
+    setLocale(next);
+  }, []);
+
+  const toggle = useCallback(() => {
+    setLocale((cur) => {
+      const nextCode = cur.code === 'he' ? 'en' : 'he';
+      localStorage.setItem(STORAGE_KEY, nextCode);
+      return locales[nextCode];
+    });
+  }, []);
+
+  const t = useCallback(
+    (key: string, params?: Record<string, string | number>) => {
+      let s = locale.t[key] ?? defaultLocale.t[key] ?? key;
+      if (params) {
+        for (const [k, v] of Object.entries(params)) {
+          s = s.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+        }
+      }
+      return s;
+    },
+    [locale],
+  );
+
+  const value = useMemo<I18nValue>(
+    () => ({
+      code: locale.code,
+      dir: locale.dir,
+      t,
+      languages: Object.values(locales).map((l) => ({ code: l.code, name: l.name })),
+      setLanguage,
+      toggle,
+    }),
+    [locale, t, setLanguage, toggle],
+  );
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {
-  const locale = useContext(I18nContext);
-  const t = (key: string) => locale.t[key] ?? key;
-  return { t, dir: locale.dir, code: locale.code };
+  const v = useContext(I18nContext);
+  if (!v) throw new Error('useI18n must be used within I18nProvider');
+  return v;
 }

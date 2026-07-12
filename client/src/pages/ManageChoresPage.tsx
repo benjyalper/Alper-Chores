@@ -13,11 +13,11 @@ import { ListSkeleton } from '../components/Skeletons';
 import { useI18n } from '../i18n/I18nContext';
 import { useToast } from '../components/Toast';
 
-const FREQ_LABEL: Record<string, string> = {
-  ONCE: 'Once',
-  DAILY: 'Every day',
-  WEEKLY: 'Weekly',
-  CUSTOM_WEEKLY: 'Selected days',
+const FREQ_KEY: Record<string, string> = {
+  ONCE: 'freq_once',
+  DAILY: 'freq_daily',
+  WEEKLY: 'freq_weekly',
+  CUSTOM_WEEKLY: 'freq_custom',
 };
 
 export function ManageChoresPage() {
@@ -89,14 +89,13 @@ export function ManageChoresPage() {
   };
 
   const handleDelete = async (c: ChoreTemplateDTO) => {
-    if (!confirm(`Delete "${c.name}"? Chores with history are deactivated instead.`))
-      return;
+    if (!confirm(t('confirm_delete_chore', { name: c.name }))) return;
     try {
       const res = (await remove.mutateAsync(c.id)) as {
         deleted: boolean;
         deactivated: boolean;
       };
-      toast.success(res.deactivated ? 'Deactivated (had history)' : 'Deleted');
+      toast.success(res.deactivated ? t('deactivated_history') : t('deleted'));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('save_failed'));
     }
@@ -131,7 +130,7 @@ export function ManageChoresPage() {
         <div className="inline-form">
           <input
             type="text"
-            placeholder="New category name"
+            placeholder={t('new_category')}
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
           />
@@ -140,7 +139,7 @@ export function ManageChoresPage() {
             onClick={addCategory}
             disabled={!newCategory.trim() || createCategory.isPending}
           >
-            Add category
+            {t('add_category')}
           </button>
         </div>
         <div className="cat-chips">
@@ -162,36 +161,36 @@ export function ManageChoresPage() {
           <table className="chore-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Repeats</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th aria-label="Actions" />
+                <th>{t('th_name')}</th>
+                <th>{t('category')}</th>
+                <th>{t('recurrence')}</th>
+                <th>{t('time')}</th>
+                <th>{t('th_status')}</th>
+                <th aria-label={t('th_actions')} />
               </tr>
             </thead>
             <tbody>
               {chores.data!.map((c) => (
                 <tr key={c.id} className={c.isActive ? '' : 'row--inactive'}>
-                  <td data-label="Name">
+                  <td data-label={t('th_name')}>
                     {c.name}
-                    {c.isMeal && <span className="chip chip--slot">Meal</span>}
+                    {c.isMeal && <span className="chip chip--slot">{t('meal_badge')}</span>}
                   </td>
-                  <td data-label="Category">{catName.get(c.categoryId) ?? '—'}</td>
-                  <td data-label="Repeats">
-                    {c.recurrence ? FREQ_LABEL[c.recurrence.frequency] : '—'}
+                  <td data-label={t('category')}>{catName.get(c.categoryId) ?? '—'}</td>
+                  <td data-label={t('recurrence')}>
+                    {c.recurrence ? t(FREQ_KEY[c.recurrence.frequency]) : '—'}
                   </td>
-                  <td data-label="Time">{c.defaultTime ?? '—'}</td>
-                  <td data-label="Status">
+                  <td data-label={t('time')}>{c.defaultTime ?? '—'}</td>
+                  <td data-label={t('th_status')}>
                     <span className={`dot ${c.isActive ? 'dot--on' : 'dot--off'}`} />
-                    {c.isActive ? 'Active' : 'Inactive'}
+                    {c.isActive ? t('active_label') : t('member_inactive_label')}
                   </td>
-                  <td data-label="Actions" className="chore-table__actions">
+                  <td data-label={t('th_actions')} className="chore-table__actions">
                     <button className="btn btn--ghost btn--sm" onClick={() => setEditing(c)}>
                       {t('edit')}
                     </button>
                     <button className="btn btn--ghost btn--sm" onClick={() => toggleActive(c)}>
-                      {c.isActive ? 'Deactivate' : 'Reactivate'}
+                      {c.isActive ? t('member_deactivate') : t('member_reactivate')}
                     </button>
                     <button
                       className="btn btn--ghost btn--sm btn--danger-text"

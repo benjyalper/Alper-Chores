@@ -10,9 +10,11 @@ const NAV = [
 ];
 
 export function Layout() {
-  const { t } = useI18n();
+  const { t, code, toggle } = useI18n();
   const online = useOnline();
   const { canInstall, install, dismiss } = useInstallPrompt();
+  // Show the language you would switch TO.
+  const otherLangLabel = code === 'he' ? 'EN' : 'עברית';
 
   return (
     <div className="app-shell">
@@ -21,21 +23,32 @@ export function Layout() {
           <img src="/icons/icon-192.png" alt="" className="topbar__logo" width={28} height={28} />
           <span>{t('appName')}</span>
         </div>
-        <nav className="topbar__nav" aria-label="Primary">
-          {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              className={({ isActive }) =>
-                `nav-link${isActive ? ' nav-link--active' : ''}`
-              }
-            >
-              <span aria-hidden="true">{n.icon}</span>
-              <span>{t(n.key)}</span>
-            </NavLink>
-          ))}
-        </nav>
+        <div className="topbar__right">
+          <nav className="topbar__nav" aria-label="Primary">
+            {NAV.map((n) => (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.end}
+                className={({ isActive }) =>
+                  `nav-link${isActive ? ' nav-link--active' : ''}`
+                }
+              >
+                <span aria-hidden="true">{n.icon}</span>
+                <span>{t(n.key)}</span>
+              </NavLink>
+            ))}
+          </nav>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm lang-toggle"
+            onClick={toggle}
+            aria-label={t('switch_language')}
+            title={t('switch_language')}
+          >
+            <span aria-hidden="true">🌐</span> {otherLangLabel}
+          </button>
+        </div>
       </header>
 
       {!online && (

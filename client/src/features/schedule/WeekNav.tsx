@@ -1,6 +1,6 @@
 import type { WeeklyScheduleDTO } from '@shared/types';
-import { formatDisplayDate } from '@shared/dates';
 import { useI18n } from '../../i18n/I18nContext';
+import { weekdayDate } from '../../utils/format';
 
 interface Props {
   schedule: WeeklyScheduleDTO;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function WeekNav({ schedule, onPrev, onThis, onNext }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const label = schedule.isCurrentWeek
     ? t('week_current')
     : schedule.isPastWeek
@@ -21,7 +21,7 @@ export function WeekNav({ schedule, onPrev, onThis, onNext }: Props) {
     <div className="week-nav">
       <div className="week-nav__buttons">
         <button type="button" className="btn btn--ghost" onClick={onPrev}>
-          ← {t('week_prev')}
+          <span aria-hidden="true">‹</span> {t('week_prev')}
         </button>
         <button
           type="button"
@@ -31,7 +31,7 @@ export function WeekNav({ schedule, onPrev, onThis, onNext }: Props) {
           {t('week_this')}
         </button>
         <button type="button" className="btn btn--ghost" onClick={onNext}>
-          {t('week_next')} →
+          {t('week_next')} <span aria-hidden="true">›</span>
         </button>
       </div>
       <div className="week-nav__label">
@@ -43,8 +43,8 @@ export function WeekNav({ schedule, onPrev, onThis, onNext }: Props) {
           {label}
         </span>
         <span className="week-nav__range">
-          {formatDisplayDate(schedule.weekStart, schedule.timezone)} —{' '}
-          {formatDisplayDate(schedule.weekEnd, schedule.timezone)}
+          {weekdayDate(schedule.weekStart, schedule.timezone, code)} —{' '}
+          {weekdayDate(schedule.weekEnd, schedule.timezone, code)}
         </span>
       </div>
     </div>

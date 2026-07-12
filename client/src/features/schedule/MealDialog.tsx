@@ -158,7 +158,7 @@ export function MealDialog({ occ, members, onClose }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, recipeUrl: e.target.value }))}
             />
             {recipeInvalid && (
-              <span className="field__error">Enter a valid http(s) URL.</span>
+              <span className="field__error">{t('url_invalid')}</span>
             )}
             {!recipeInvalid && form.recipeUrl && (
               <a
@@ -207,7 +207,7 @@ export function MealDialog({ occ, members, onClose }: Props) {
               }
             />
             {restaurantInvalid && (
-              <span className="field__error">Enter a valid http(s) URL.</span>
+              <span className="field__error">{t('url_invalid')}</span>
             )}
             {!restaurantInvalid && form.restaurantUrl && (
               <a

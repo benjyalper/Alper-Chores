@@ -140,7 +140,7 @@ export function MembersPage() {
                   type="button"
                   className={`color-swatch${form.color === c ? ' color-swatch--active' : ''}`}
                   style={{ backgroundColor: c }}
-                  aria-label={`Color ${c}`}
+                  aria-label={`${t('member_color')} ${c}`}
                   aria-pressed={form.color === c}
                   onClick={() => setForm((f) => ({ ...f, color: c }))}
                 />
@@ -243,7 +243,7 @@ export function MembersPage() {
                     type="button"
                     className={`color-swatch${editing.color === c ? ' color-swatch--active' : ''}`}
                     style={{ backgroundColor: c }}
-                    aria-label={`Color ${c}`}
+                    aria-label={`${t('member_color')} ${c}`}
                     onClick={() => setEditing({ ...editing, color: c })}
                   />
                 ))}
@@ -274,19 +274,16 @@ export function MembersPage() {
             </>
           }
         >
-          <p>
-            This member has <strong>{futureCount}</strong> future assignment
-            {futureCount === 1 ? '' : 's'}. What should happen to them?
-          </p>
+          <p>{t('future_assignments_q', { count: futureCount })}</p>
           <fieldset className="scope-options">
-            <legend className="sr-only">Future assignments</legend>
+            <legend className="sr-only">{t('future_assignments_q', { count: futureCount })}</legend>
             <label className="scope-option">
               <input
                 type="radio"
                 checked={futureChoice === 'leave'}
                 onChange={() => setFutureChoice('leave')}
               />
-              <span>Leave them assigned to this member</span>
+              <span>{t('fa_leave')}</span>
             </label>
             <label className="scope-option">
               <input
@@ -294,7 +291,7 @@ export function MembersPage() {
                 checked={futureChoice === 'clear'}
                 onChange={() => setFutureChoice('clear')}
               />
-              <span>Clear future assignments (set to unassigned)</span>
+              <span>{t('fa_clear')}</span>
             </label>
             <label className="scope-option">
               <input
@@ -302,14 +299,14 @@ export function MembersPage() {
                 checked={futureChoice === 'transfer'}
                 onChange={() => setFutureChoice('transfer')}
               />
-              <span>Transfer to another member</span>
+              <span>{t('fa_transfer')}</span>
             </label>
             {futureChoice === 'transfer' && (
               <MemberSelect
                 members={activeMembers.filter((m) => m.id !== deactivateTarget.id)}
                 value={transferTo}
                 onChange={setTransferTo}
-                ariaLabel="Transfer target"
+                ariaLabel={t('transfer_target')}
               />
             )}
           </fieldset>

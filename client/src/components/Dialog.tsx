@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useI18n } from '../i18n/I18nContext';
 
 interface DialogProps {
   open: boolean;
@@ -11,6 +12,7 @@ interface DialogProps {
 
 /** Accessible modal dialog: focus trap, restore focus, Escape to close. */
 export function Dialog({ open, onClose, title, children, footer }: DialogProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const titleId = useRef(`dlg-${Math.random().toString(36).slice(2)}`);
@@ -76,7 +78,7 @@ export function Dialog({ open, onClose, title, children, footer }: DialogProps) 
             type="button"
             className="icon-btn"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t('close_dialog')}
           >
             ✕
           </button>

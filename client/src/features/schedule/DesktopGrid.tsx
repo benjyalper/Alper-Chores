@@ -4,10 +4,9 @@ import type {
   OccurrenceDTO,
   WeeklyScheduleDTO,
 } from '@shared/types';
-import { formatDisplayDate } from '@shared/dates';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
-import { weekdayShort } from '../../utils/weekdays';
+import { monthDay, weekdayShort } from '../../utils/format';
 
 interface Props {
   schedule: WeeklyScheduleDTO;
@@ -24,7 +23,7 @@ export function DesktopGrid({
   onStatus,
   onOpenMeal,
 }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
 
   return (
     <div className="grid-scroll">
@@ -38,9 +37,11 @@ export function DesktopGrid({
             key={day.date}
             className={`day-head${day.isToday ? ' day-head--today' : ''}`}
           >
-            <span className="day-head__name">{weekdayShort(day.weekday)}</span>
+            <span className="day-head__name">
+              {weekdayShort(day.date, schedule.timezone, code)}
+            </span>
             <span className="day-head__date">
-              {formatDisplayDate(day.date, schedule.timezone).replace(/^\w+, /, '')}
+              {monthDay(day.date, schedule.timezone, code)}
             </span>
             {day.isToday && <span className="day-head__today">{t('today')}</span>}
             <span className="day-head__progress">

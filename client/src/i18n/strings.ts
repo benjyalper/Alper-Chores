@@ -1,10 +1,11 @@
-// Centralized user-facing strings. Adding Hebrew later means adding a second
-// dictionary with the same keys and a `dir: 'rtl'` flag — no component rewrites.
+// Centralized user-facing strings. Add a language by adding a dictionary with
+// the same keys and a `dir`. English and Hebrew (RTL) are provided.
 
 export type Dir = 'ltr' | 'rtl';
 
 export interface Locale {
   code: string;
+  name: string; // native name, shown in the language switcher
   dir: Dir;
   t: Record<string, string>;
 }
@@ -15,6 +16,9 @@ const en: Record<string, string> = {
   nav_members: 'Family',
   nav_chores: 'Chores',
   nav_settings: 'Settings',
+
+  language: 'Language',
+  switch_language: 'Switch language',
 
   week_prev: 'Previous week',
   week_this: 'This week',
@@ -27,6 +31,7 @@ const en: Record<string, string> = {
   add_chore: 'Add chore',
   unassigned: 'Unassigned',
   not_planned: 'Not planned',
+  inactive_suffix: '(inactive)',
 
   status_pending: 'Pending',
   status_completed: 'Completed',
@@ -41,9 +46,14 @@ const en: Record<string, string> = {
   saved: 'Saved',
   save_failed: 'Could not save. Please try again.',
   loading: 'Loading…',
+  loading_schedule: 'Loading schedule',
   retry: 'Retry',
   delete: 'Delete',
   edit: 'Edit',
+  close_dialog: 'Close dialog',
+
+  indicator_repeats: 'Repeats',
+  indicator_notes: 'Has notes',
 
   meal_title: 'Meal details',
   meal_plan_type: 'Meal plan',
@@ -60,6 +70,13 @@ const en: Record<string, string> = {
   meal_notes: 'Notes',
   open_recipe: 'Open recipe',
   open_restaurant: 'Open restaurant',
+  meal_badge: 'Meal',
+  url_invalid: 'Enter a valid http(s) URL.',
+
+  mealtype_label: 'Meal type',
+  mealtype_breakfast: 'Breakfast',
+  mealtype_lunch: 'Lunch',
+  mealtype_dinner: 'Dinner',
 
   member_add: 'Add family member',
   member_name: 'Name',
@@ -69,6 +86,12 @@ const en: Record<string, string> = {
   member_deactivate: 'Deactivate',
   member_reactivate: 'Reactivate',
   member_inactive_label: 'Inactive',
+  transfer_target: 'Transfer target',
+  future_assignments_q:
+    'This member has {count} future assignments. What should happen to them?',
+  fa_leave: 'Leave them assigned to this member',
+  fa_clear: 'Clear future assignments (set to unassigned)',
+  fa_transfer: 'Transfer to another member',
 
   scope_question: 'Apply this change to…',
   scope_occurrence: 'This occurrence only',
@@ -80,6 +103,7 @@ const en: Record<string, string> = {
   empty_no_assignee: 'No one is assigned yet.',
   empty_no_custom: 'No custom chores have been added.',
   empty_members: 'No family members yet.',
+  done_count: '{done} of {total} done',
 
   offline: "You're offline — showing the last loaded data. Changes can't be saved.",
   install_hint: 'Install Alper Chores on your device for quick access.',
@@ -91,20 +115,190 @@ const en: Record<string, string> = {
   description: 'Description',
   time: 'Time',
   time_slot: 'Time slot label',
+  slot_placeholder: 'Morning / Evening',
   recurrence: 'Repeats',
   freq_once: 'Once',
   freq_daily: 'Every day',
   freq_weekly: 'Weekly',
   freq_custom: 'Selected weekdays',
+  weekdays_legend: 'Weekdays',
   start_date: 'Start date',
   end_date: 'End date (optional)',
   default_assignee: 'Default assignee',
   is_meal: 'This is a meal',
   weekly_progress: 'Weekly progress',
+
+  new_category: 'New category name',
+  add_category: 'Add category',
+  th_name: 'Name',
+  th_status: 'Status',
+  th_actions: 'Actions',
+  active_label: 'Active',
+  confirm_delete_chore:
+    'Delete "{name}"? Chores with history are deactivated instead.',
+  deleted: 'Deleted',
+  deactivated_history: 'Deactivated (had history)',
+
+  settings_household: 'Household',
+  settings_timezone: 'Timezone',
+  settings_week_starts: 'Week starts on',
+  settings_install_title: 'Install this app',
+  settings_install_android:
+    'On Android (Chrome): open the browser menu and choose “Install app” or “Add to Home screen”.',
+  settings_install_ios:
+    'On iPhone (Safari): tap the Share button, then “Add to Home Screen”.',
+  settings_about: 'About',
+  settings_about_text:
+    'Alper Chores — a weekly family chore & meal organizer. Version 1.',
+  week_starts_sunday: 'Sunday',
+  week_starts_monday: 'Monday',
+};
+
+const he: Record<string, string> = {
+  appName: 'Alper Chores',
+  nav_schedule: 'שבוע',
+  nav_members: 'משפחה',
+  nav_chores: 'מטלות',
+  nav_settings: 'הגדרות',
+
+  language: 'שפה',
+  switch_language: 'החלפת שפה',
+
+  week_prev: 'שבוע קודם',
+  week_this: 'השבוע',
+  week_next: 'שבוע הבא',
+  week_current: 'השבוע',
+  week_past: 'שבוע שעבר',
+  week_future: 'שבוע עתידי',
+  today: 'היום',
+
+  add_chore: 'הוספת מטלה',
+  unassigned: 'לא משויך',
+  not_planned: 'לא תוכנן',
+  inactive_suffix: '(לא פעיל)',
+
+  status_pending: 'ממתין',
+  status_completed: 'הושלם',
+  status_skipped: 'דולג',
+  mark_done: 'סמן כבוצע',
+  mark_skipped: 'דלג',
+  reopen: 'פתח מחדש',
+
+  save: 'שמירה',
+  cancel: 'ביטול',
+  saving: 'שומר…',
+  saved: 'נשמר',
+  save_failed: 'השמירה נכשלה. נסו שוב.',
+  loading: 'טוען…',
+  loading_schedule: 'טוען לוח',
+  retry: 'נסו שוב',
+  delete: 'מחיקה',
+  edit: 'עריכה',
+  close_dialog: 'סגירת חלון',
+
+  indicator_repeats: 'חוזר',
+  indicator_notes: 'יש הערות',
+
+  meal_title: 'פרטי ארוחה',
+  meal_plan_type: 'סוג ארוחה',
+  meal_home: 'בישול ביתי',
+  meal_restaurant: 'מסעדה',
+  meal_takeout: 'טייק-אווי / משלוח',
+  meal_leftovers: 'שאריות',
+  meal_other: 'אחר',
+  meal_description: 'מה אוכלים?',
+  meal_recipe_url: 'קישור למתכון',
+  meal_restaurant_name: 'שם המסעדה',
+  meal_restaurant_url: 'קישור למסעדה',
+  meal_takeout_provider: 'ספק טייק-אווי',
+  meal_notes: 'הערות',
+  open_recipe: 'פתיחת מתכון',
+  open_restaurant: 'פתיחת מסעדה',
+  meal_badge: 'ארוחה',
+  url_invalid: 'הזינו כתובת http(s) תקינה.',
+
+  mealtype_label: 'סוג הארוחה',
+  mealtype_breakfast: 'ארוחת בוקר',
+  mealtype_lunch: 'ארוחת צהריים',
+  mealtype_dinner: 'ארוחת ערב',
+
+  member_add: 'הוספת בן משפחה',
+  member_name: 'שם',
+  member_color: 'צבע',
+  member_emoji: 'אימוג׳י',
+  member_active: 'פעיל',
+  member_deactivate: 'השבתה',
+  member_reactivate: 'הפעלה מחדש',
+  member_inactive_label: 'לא פעיל',
+  transfer_target: 'יעד ההעברה',
+  future_assignments_q:
+    'לבן משפחה זה יש {count} שיוכים עתידיים. מה לעשות איתם?',
+  fa_leave: 'להשאיר משויכים לבן משפחה זה',
+  fa_clear: 'לנקות שיוכים עתידיים (ללא שיוך)',
+  fa_transfer: 'להעביר לבן משפחה אחר',
+
+  scope_question: 'החל שינוי זה על…',
+  scope_occurrence: 'מופע זה בלבד',
+  scope_rest_of_week: 'שאר השבוע',
+  scope_this_and_future: 'שבוע זה והשבועות הבאים',
+  scope_entire_series: 'כל הסדרה',
+
+  empty_day: 'היום הזה מסודר לגמרי.',
+  empty_no_assignee: 'עדיין לא שויך אף אחד.',
+  empty_no_custom: 'לא נוספו מטלות מותאמות.',
+  empty_members: 'אין עדיין בני משפחה.',
+  done_count: '{done} מתוך {total} בוצעו',
+
+  offline: 'אין חיבור — מוצגים הנתונים האחרונים שנטענו. לא ניתן לשמור שינויים.',
+  install_hint: 'התקינו את Alper Chores במכשיר לגישה מהירה.',
+  install: 'התקנה',
+  dismiss: 'סגירה',
+
+  chore_name: 'שם המטלה',
+  category: 'קטגוריה',
+  description: 'תיאור',
+  time: 'שעה',
+  time_slot: 'תווית משבצת זמן',
+  slot_placeholder: 'בוקר / ערב',
+  recurrence: 'חזרתיות',
+  freq_once: 'פעם אחת',
+  freq_daily: 'כל יום',
+  freq_weekly: 'שבועי',
+  freq_custom: 'ימים נבחרים',
+  weekdays_legend: 'ימי השבוע',
+  start_date: 'תאריך התחלה',
+  end_date: 'תאריך סיום (אופציונלי)',
+  default_assignee: 'משויך כברירת מחדל',
+  is_meal: 'זו ארוחה',
+  weekly_progress: 'התקדמות שבועית',
+
+  new_category: 'שם קטגוריה חדשה',
+  add_category: 'הוספת קטגוריה',
+  th_name: 'שם',
+  th_status: 'סטטוס',
+  th_actions: 'פעולות',
+  active_label: 'פעיל',
+  confirm_delete_chore: 'למחוק "{name}"? מטלות עם היסטוריה יושבתו במקום זאת.',
+  deleted: 'נמחק',
+  deactivated_history: 'הושבת (קיימת היסטוריה)',
+
+  settings_household: 'משק בית',
+  settings_timezone: 'אזור זמן',
+  settings_week_starts: 'תחילת השבוע',
+  settings_install_title: 'התקנת האפליקציה',
+  settings_install_android:
+    'באנדרואיד (Chrome): פתחו את תפריט הדפדפן ובחרו "התקן אפליקציה" או "הוסף למסך הבית".',
+  settings_install_ios:
+    'באייפון (Safari): הקישו על כפתור השיתוף ולאחר מכן "הוסף למסך הבית".',
+  settings_about: 'אודות',
+  settings_about_text: 'Alper Chores — מארגן מטלות וארוחות שבועי למשפחה. גרסה 1.',
+  week_starts_sunday: 'ראשון',
+  week_starts_monday: 'שני',
 };
 
 export const locales: Record<string, Locale> = {
-  en: { code: 'en', dir: 'ltr', t: en },
+  en: { code: 'en', name: 'English', dir: 'ltr', t: en },
+  he: { code: 'he', name: 'עברית', dir: 'rtl', t: he },
 };
 
 export const defaultLocale = locales.en;

@@ -19,12 +19,12 @@ interface Props {
   busy?: boolean;
 }
 
-const MEAL_PLAN_LABEL: Record<string, string> = {
-  HOME_COOKED: 'Home-cooked',
-  RESTAURANT: 'Restaurant',
-  TAKEOUT: 'Takeout',
-  LEFTOVERS: 'Leftovers',
-  OTHER: 'Other',
+const MEAL_PLAN_KEY: Record<string, string> = {
+  HOME_COOKED: 'meal_home',
+  RESTAURANT: 'meal_restaurant',
+  TAKEOUT: 'meal_takeout',
+  LEFTOVERS: 'meal_leftovers',
+  OTHER: 'meal_other',
 };
 
 export function OccurrenceCard({
@@ -68,7 +68,7 @@ export function OccurrenceCard({
     occ.isMeal && occ.mealSummary
       ? occ.mealSummary.description ||
         (occ.mealSummary.planType
-          ? MEAL_PLAN_LABEL[occ.mealSummary.planType]
+          ? t(MEAL_PLAN_KEY[occ.mealSummary.planType])
           : t('not_planned'))
       : null;
 
@@ -84,12 +84,12 @@ export function OccurrenceCard({
         </div>
         <div className="card__indicators" aria-hidden="true">
           {occ.isRecurring && (
-            <span className="chip chip--recurring" title="Repeats">
+            <span className="chip chip--recurring" title={t('indicator_repeats')}>
               ⟳
             </span>
           )}
           {occ.hasNotes && (
-            <span className="chip chip--notes" title="Has notes">
+            <span className="chip chip--notes" title={t('indicator_notes')}>
               📝
             </span>
           )}

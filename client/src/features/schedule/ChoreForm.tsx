@@ -9,6 +9,7 @@ import type {
 import { Dialog } from '../../components/Dialog';
 import { MemberSelect } from '../../components/MemberSelect';
 import { useI18n } from '../../i18n/I18nContext';
+import { isoWeekdayShort } from '../../utils/format';
 
 export interface ChoreFormValue {
   name: string;
@@ -41,15 +42,7 @@ interface Props {
   title: string;
 }
 
-const WEEKDAYS = [
-  { n: 1, label: 'Mon' },
-  { n: 2, label: 'Tue' },
-  { n: 3, label: 'Wed' },
-  { n: 4, label: 'Thu' },
-  { n: 5, label: 'Fri' },
-  { n: 6, label: 'Sat' },
-  { n: 7, label: 'Sun' },
-];
+const WEEKDAY_NUMBERS = [1, 2, 3, 4, 5, 6, 7];
 
 export function ChoreForm({
   open,
@@ -62,7 +55,7 @@ export function ChoreForm({
   submitting,
   title,
 }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const [value, setValue] = useState<ChoreFormValue>(() => ({
     name: initial?.name ?? '',
     categoryId: initial?.categoryId ?? categories[0]?.id ?? '',
@@ -181,7 +174,7 @@ export function ChoreForm({
           <span className="field__label">{t('time_slot')}</span>
           <input
             type="text"
-            placeholder="Morning / Evening"
+            placeholder={t('slot_placeholder')}
             value={value.timeSlotLabel}
             onChange={(e) => set('timeSlotLabel', e.target.value)}
           />
@@ -212,16 +205,16 @@ export function ChoreForm({
 
         {(freq === 'WEEKLY' || freq === 'CUSTOM_WEEKLY') && (
           <fieldset className="field field--full weekday-picker">
-            <legend className="field__label">Weekdays</legend>
+            <legend className="field__label">{t('weekdays_legend')}</legend>
             <div className="weekday-row">
-              {WEEKDAYS.map((d) => (
-                <label key={d.n} className="weekday">
+              {WEEKDAY_NUMBERS.map((n) => (
+                <label key={n} className="weekday">
                   <input
                     type="checkbox"
-                    checked={value.recurrence.daysOfWeek.includes(d.n)}
-                    onChange={() => toggleDay(d.n)}
+                    checked={value.recurrence.daysOfWeek.includes(n)}
+                    onChange={() => toggleDay(n)}
                   />
-                  <span>{d.label}</span>
+                  <span>{isoWeekdayShort(n, code)}</span>
                 </label>
               ))}
             </div>
@@ -248,16 +241,16 @@ export function ChoreForm({
 
         {value.isMeal && (
           <label className="field">
-            <span className="field__label">Meal type</span>
+            <span className="field__label">{t('mealtype_label')}</span>
             <select
               className="member-select"
               value={value.mealType}
               onChange={(e) => set('mealType', e.target.value as MealType | '')}
             >
               <option value="">—</option>
-              <option value="BREAKFAST">Breakfast</option>
-              <option value="LUNCH">Lunch</option>
-              <option value="DINNER">Dinner</option>
+              <option value="BREAKFAST">{t('mealtype_breakfast')}</option>
+              <option value="LUNCH">{t('mealtype_lunch')}</option>
+              <option value="DINNER">{t('mealtype_dinner')}</option>
             </select>
           </label>
         )}

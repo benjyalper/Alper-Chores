@@ -10,7 +10,9 @@ import type { ConfigDTO } from '../../../shared/types.js';
 
 export const apiRouter = Router();
 
-// Lightweight liveness/readiness check. Verifies DB connectivity.
+// Liveness check for the platform healthcheck. Always returns 200 when the
+// process is up (a running app should pass the deploy healthcheck even if the
+// database has a transient hiccup); the DB status is reported in the body.
 apiRouter.get(
   '/health',
   asyncHandler(async (_req, res) => {
@@ -20,7 +22,7 @@ apiRouter.get(
     } catch {
       db = 'down';
     }
-    res.status(db === 'ok' ? 200 : 503).json({
+    res.status(200).json({
       status: db === 'ok' ? 'ok' : 'degraded',
       db,
       time: new Date().toISOString(),

@@ -23,7 +23,7 @@ const baseRule = (over: Partial<RuleInput> = {}): RuleInput => ({
   ...over,
 });
 
-const week = weekDates('2026-07-08'); // Mon 06 .. Sun 12
+const week = weekDates('2026-07-08'); // Sun 05 .. Sat 11 (Sunday-start)
 
 describe('ruleFiresOn', () => {
   it('ONCE fires only on the start date', () => {
@@ -205,7 +205,7 @@ describe('resolveTemplateOccurrences', () => {
     );
     expect(out.find((o) => o.date === '2026-07-08')!.assignedMemberId).toBe('mA');
     expect(out.find((o) => o.date === '2026-07-09')!.assignedMemberId).toBe('mB');
-    expect(out.find((o) => o.date === '2026-07-12')!.assignedMemberId).toBe('mB');
+    expect(out.find((o) => o.date === '2026-07-11')!.assignedMemberId).toBe('mB');
   });
 
   it('merges completion status for a dated occurrence', () => {

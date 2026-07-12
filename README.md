@@ -5,7 +5,7 @@ members open the week on a computer or phone and assign themselves to chores fro
 a dropdown, plan meals, and check things off. Built for the Alper family but
 designed to grow (more members, more chores, Hebrew/RTL later).
 
-- 🗓️ Monday–Sunday weekly schedule with Previous / This / Next week navigation
+- 🗓️ Sunday–Saturday weekly schedule with Previous / This / Next week navigation
 - 👨‍👩‍👧‍👦 Family members stored in the database and managed in-app
 - 🔁 One-time **and** recurring chores, with occurrence / week / series scopes
 - 🍽️ Meal planning (home-cooked, restaurant, takeout, leftovers, other) with recipe links
@@ -90,7 +90,7 @@ Alper-Chores/
 
 > _Add screenshots here after deployment._
 
-- **Desktop** — 7-column Monday–Sunday grid with category sections.
+- **Desktop** — 7-column Sunday–Saturday grid with category sections.
 - **Mobile** — one day at a time with a horizontal day selector and weekly progress bars.
 
 ## Local prerequisites

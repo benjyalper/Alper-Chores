@@ -40,12 +40,14 @@ run('API integration', () => {
     expect(res.body.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('GET /api/schedule returns a Monday–Sunday week with occurrences', async () => {
-    const res = await request(app).get('/api/schedule?weekStart=2026-07-06');
+  it('GET /api/schedule returns a Sunday–Saturday week with occurrences', async () => {
+    // Any in-week date snaps to the Sunday-start week 2026-07-05 .. 2026-07-11.
+    const res = await request(app).get('/api/schedule?weekStart=2026-07-08');
     expect(res.status).toBe(200);
-    expect(res.body.weekStart).toBe('2026-07-06');
-    expect(res.body.weekEnd).toBe('2026-07-12');
+    expect(res.body.weekStart).toBe('2026-07-05');
+    expect(res.body.weekEnd).toBe('2026-07-11');
     expect(res.body.days).toHaveLength(7);
+    expect(res.body.days[0].weekday).toBe(7); // Sunday first
     // Seeded daily chores should appear every day.
     expect(res.body.days[0].occurrences.length).toBeGreaterThan(0);
   });

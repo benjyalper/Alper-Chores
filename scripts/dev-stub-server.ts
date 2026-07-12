@@ -19,7 +19,7 @@ import {
   type TemplateInput,
 } from '../shared/recurrence';
 import {
-  startOfWeekMonday,
+  startOfWeek,
   todayLocalDate,
   weekDates,
   isoWeekday,
@@ -81,7 +81,7 @@ app.get('/api/chores', (_req, res) =>
 
 app.get('/api/schedule', (req, res) => {
   const today = todayLocalDate(TZ);
-  const weekStart = startOfWeekMonday((req.query.weekStart as string) || today);
+  const weekStart = startOfWeek((req.query.weekStart as string) || today);
   const dates = weekDates(weekStart);
   const dayOcc = new Map<string, unknown[]>();
   dates.forEach((d) => dayOcc.set(d, []));
@@ -111,10 +111,10 @@ app.get('/api/schedule', (req, res) => {
       });
     }
   }
-  const curMon = startOfWeekMonday(today);
+  const curStart = startOfWeek(today);
   const out: WeeklyScheduleDTO = {
     weekStart, weekEnd: dates[6], timezone: TZ,
-    isCurrentWeek: weekStart === curMon, isPastWeek: weekStart < curMon, isFutureWeek: weekStart > curMon,
+    isCurrentWeek: weekStart === curStart, isPastWeek: weekStart < curStart, isFutureWeek: weekStart > curStart,
     members, categories,
     days: dates.map((date) => {
       const occ = (dayOcc.get(date) as any[]).sort((a, b) => (a.time ?? '99') < (b.time ?? '99') ? -1 : 1);

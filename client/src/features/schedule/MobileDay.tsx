@@ -9,8 +9,7 @@ import { formatDisplayDate } from '@shared/dates';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
 import { getLastDayIndex, setLastDayIndex } from '../../utils/members';
-
-const WEEKDAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { weekdayShort } from '../../utils/weekdays';
 
 interface Props {
   schedule: WeeklyScheduleDTO;
@@ -57,7 +56,7 @@ export function MobileDay({
               }`}
               onClick={() => setSelected(i)}
             >
-              <span className="day-pill__name">{WEEKDAY_NAMES[i]}</span>
+              <span className="day-pill__name">{weekdayShort(d.weekday)}</span>
               <span className="day-pill__num">{d.date.slice(8)}</span>
               <span className="day-pill__bar" aria-hidden="true">
                 <span className="day-pill__fill" style={{ width: `${pct}%` }} />

@@ -9,7 +9,7 @@ import {
   addLocalDays,
   isoWeekday,
   localDateToUtcMidnight,
-  startOfWeekMonday,
+  startOfWeek,
   todayLocalDate,
   utcMidnightToLocalDate,
   weekDates,
@@ -37,11 +37,10 @@ export async function getWeeklySchedule(
   const household = await getHousehold();
   const tz = household.timezone || env.HOUSEHOLD_TIMEZONE;
 
+  const weekStartsOn = household.weekStartsOn;
   const today = todayLocalDate(tz);
-  const weekStart = weekStartParam
-    ? startOfWeekMonday(weekStartParam)
-    : startOfWeekMonday(today);
-  const dates = weekDates(weekStart);
+  const weekStart = startOfWeek(weekStartParam ?? today, weekStartsOn);
+  const dates = weekDates(weekStart, weekStartsOn);
   const weekEnd = dates[6];
 
   const rangeStart = localDateToUtcMidnight(weekStart);
@@ -223,7 +222,7 @@ export async function getWeeklySchedule(
     };
   });
 
-  const currentWeekStart = startOfWeekMonday(today);
+  const currentWeekStart = startOfWeek(today, weekStartsOn);
 
   return {
     weekStart,

@@ -18,7 +18,7 @@ CREATE TABLE "Household" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "timezone" TEXT NOT NULL DEFAULT 'Asia/Jerusalem',
-    "weekStartsOn" "WeekStart" NOT NULL DEFAULT 'MONDAY',
+    "weekStartsOn" "WeekStart" NOT NULL DEFAULT 'SUNDAY',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -263,13 +263,3 @@ ALTER TABLE "MealPlan" ADD CONSTRAINT "MealPlan_choreTemplateId_fkey" FOREIGN KE
 -- AddForeignKey
 ALTER TABLE "MealPlan" ADD CONSTRAINT "MealPlan_assignedMemberId_fkey" FOREIGN KEY ("assignedMemberId") REFERENCES "FamilyMember"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-┌─────────────────────────────────────────────────────────┐
-│  Update available 5.22.0 -> 7.8.0                       │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘

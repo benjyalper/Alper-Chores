@@ -3,7 +3,7 @@ import type {
   AssignmentScope,
   OccurrenceDTO,
 } from '@shared/types';
-import { addLocalDays, startOfWeekMonday, todayLocalDate } from '@shared/dates';
+import { addLocalDays, startOfWeek, todayLocalDate } from '@shared/dates';
 import {
   useSchedule,
   useSetAssignment,
@@ -30,7 +30,7 @@ export function SchedulePage() {
   const tz = config.data?.timezone ?? 'Asia/Jerusalem';
 
   const [weekStart, setWeekStart] = useState(() =>
-    startOfWeekMonday(todayLocalDate(tz)),
+    startOfWeek(todayLocalDate(tz)),
   );
   const schedule = useSchedule(weekStart);
   const categories = useCategories();
@@ -123,7 +123,7 @@ export function SchedulePage() {
           <WeekNav
             schedule={schedule.data}
             onPrev={() => setWeekStart((w) => addLocalDays(w, -7))}
-            onThis={() => setWeekStart(startOfWeekMonday(todayLocalDate(tz)))}
+            onThis={() => setWeekStart(startOfWeek(todayLocalDate(tz)))}
             onNext={() => setWeekStart((w) => addLocalDays(w, 7))}
           />
           {isMobile ? (

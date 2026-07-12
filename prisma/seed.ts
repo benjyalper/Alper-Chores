@@ -64,8 +64,8 @@ async function main() {
   // Household
   await prisma.household.upsert({
     where: { id: HOUSEHOLD_ID },
-    update: { name: 'Alper Family', timezone: TZ },
-    create: { id: HOUSEHOLD_ID, name: 'Alper Family', timezone: TZ, weekStartsOn: 'MONDAY' },
+    update: { name: 'Alper Family', timezone: TZ, weekStartsOn: 'SUNDAY' },
+    create: { id: HOUSEHOLD_ID, name: 'Alper Family', timezone: TZ, weekStartsOn: 'SUNDAY' },
   });
 
   // Members (placeholders, editable by the user)

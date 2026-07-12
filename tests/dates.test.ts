@@ -4,41 +4,47 @@ import {
   daysBetween,
   isoWeekday,
   localDateToUtcMidnight,
-  startOfWeekMonday,
+  startOfWeek,
   toLocalDate,
   weekDates,
   weeksBetween,
 } from '@shared/dates';
 
-describe('week calculation (Monday–Sunday)', () => {
-  it('startOfWeekMonday returns Monday for any day in the week', () => {
-    // 2026-07-12 is a Sunday; its week Monday is 2026-07-06.
-    expect(startOfWeekMonday('2026-07-12')).toBe('2026-07-06');
-    // 2026-07-06 is a Monday -> itself.
-    expect(startOfWeekMonday('2026-07-06')).toBe('2026-07-06');
-    // 2026-07-08 (Wed) -> Monday 2026-07-06.
-    expect(startOfWeekMonday('2026-07-08')).toBe('2026-07-06');
+describe('week calculation (Sunday–Saturday)', () => {
+  it('startOfWeek returns Sunday for any day in the week (default)', () => {
+    // 2026-07-12 is a Sunday -> itself.
+    expect(startOfWeek('2026-07-12')).toBe('2026-07-12');
+    // 2026-07-06 is a Monday -> Sunday before = 2026-07-05.
+    expect(startOfWeek('2026-07-06')).toBe('2026-07-05');
+    // 2026-07-08 (Wed) -> Sunday 2026-07-05.
+    expect(startOfWeek('2026-07-08')).toBe('2026-07-05');
   });
 
-  it('weekDates yields 7 consecutive days Mon..Sun', () => {
+  it('supports a Monday-start week when requested', () => {
+    expect(startOfWeek('2026-07-08', 'MONDAY')).toBe('2026-07-06');
+    expect(startOfWeek('2026-07-12', 'MONDAY')).toBe('2026-07-06');
+  });
+
+  it('weekDates yields 7 consecutive days Sun..Sat', () => {
     const days = weekDates('2026-07-08');
     expect(days).toEqual([
+      '2026-07-05',
       '2026-07-06',
       '2026-07-07',
       '2026-07-08',
       '2026-07-09',
       '2026-07-10',
       '2026-07-11',
-      '2026-07-12',
     ]);
-    expect(isoWeekday(days[0])).toBe(1); // Monday
-    expect(isoWeekday(days[6])).toBe(7); // Sunday
+    expect(isoWeekday(days[0])).toBe(7); // Sunday
+    expect(isoWeekday(days[6])).toBe(6); // Saturday
   });
 
   it('previous and next week navigation shifts by 7 days', () => {
-    const monday = startOfWeekMonday('2026-07-08');
-    expect(addLocalDays(monday, -7)).toBe('2026-06-29');
-    expect(addLocalDays(monday, 7)).toBe('2026-07-13');
+    const sunday = startOfWeek('2026-07-08');
+    expect(sunday).toBe('2026-07-05');
+    expect(addLocalDays(sunday, -7)).toBe('2026-06-28');
+    expect(addLocalDays(sunday, 7)).toBe('2026-07-12');
   });
 
   it('daysBetween and weeksBetween', () => {
@@ -81,9 +87,10 @@ describe('daylight-saving boundaries', () => {
   });
 
   it('week containing a DST change still has exactly 7 days', () => {
+    // 2026-03-27 is a Friday; the Sunday-start week is 03-22 .. 03-28.
     const days = weekDates('2026-03-27');
     expect(days).toHaveLength(7);
-    expect(days[0]).toBe('2026-03-23');
-    expect(days[6]).toBe('2026-03-29');
+    expect(days[0]).toBe('2026-03-22');
+    expect(days[6]).toBe('2026-03-28');
   });
 });

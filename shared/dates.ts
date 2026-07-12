@@ -11,8 +11,12 @@
 // convert the local date to UTC midnight so Prisma round-trips it losslessly.
 
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import type { WeekStart } from './types';
 
 export const DEFAULT_TZ = 'Asia/Jerusalem';
+
+/** The day the week starts on. The app defaults to Sunday. */
+export const DEFAULT_WEEK_START: WeekStart = 'SUNDAY';
 
 /** Regex for a strict ISO local date. */
 export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -68,16 +72,27 @@ export function daysBetween(a: string, b: string): number {
   return Math.round((db - da) / 86_400_000);
 }
 
-/** Monday (ISO) of the week containing `localDate`. */
-export function startOfWeekMonday(localDate: string): string {
-  const wd = isoWeekday(localDate); // 1..7
-  return addLocalDays(localDate, -(wd - 1));
+/**
+ * First day of the week containing `localDate`.
+ * Defaults to Sunday; pass 'MONDAY' for a Monday-start week.
+ */
+export function startOfWeek(
+  localDate: string,
+  weekStartsOn: WeekStart = DEFAULT_WEEK_START,
+): string {
+  const wd = isoWeekday(localDate); // 1=Mon .. 7=Sun
+  // Days to subtract to reach the week start.
+  const offset = weekStartsOn === 'SUNDAY' ? wd % 7 : wd - 1;
+  return addLocalDays(localDate, -offset);
 }
 
-/** The 7 local dates Monday..Sunday for the week containing `localDate`. */
-export function weekDates(localDate: string): string[] {
-  const monday = startOfWeekMonday(localDate);
-  return Array.from({ length: 7 }, (_, i) => addLocalDays(monday, i));
+/** The 7 local dates of the week containing `localDate`, in order from its start. */
+export function weekDates(
+  localDate: string,
+  weekStartsOn: WeekStart = DEFAULT_WEEK_START,
+): string[] {
+  const start = startOfWeek(localDate, weekStartsOn);
+  return Array.from({ length: 7 }, (_, i) => addLocalDays(start, i));
 }
 
 /** a <= b for local dates. */
@@ -90,11 +105,15 @@ export function isOnOrAfter(a: string, b: string): boolean {
   return a >= b;
 }
 
-/** Whole weeks between the Mondays of two local dates. */
+/**
+ * Whole weeks between the week-starts of two local dates. The week-start
+ * convention is irrelevant to the result as long as it is applied consistently,
+ * so recurrence "every N weeks" math is stable regardless of display start day.
+ */
 export function weeksBetween(a: string, b: string): number {
-  const ma = startOfWeekMonday(a);
-  const mb = startOfWeekMonday(b);
-  return Math.round(daysBetween(ma, mb) / 7);
+  const sa = startOfWeek(a);
+  const sb = startOfWeek(b);
+  return Math.round(daysBetween(sa, sb) / 7);
 }
 
 /**

@@ -7,7 +7,6 @@ import { HttpError, badRequest, notFound } from '../utils/http-error.js';
 import {
   addLocalDays,
   localDateToUtcMidnight,
-  startOfWeekMonday,
   utcMidnightToLocalDate,
   weekDates,
 } from '../../../shared/dates.js';
@@ -75,7 +74,8 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
         break;
 
       case 'rest-of-week': {
-        const week = weekDates(startOfWeekMonday(date));
+        // Same-week boundaries as the schedule (Sunday-start by default).
+        const week = weekDates(date);
         const targets = week.filter(
           (d) => d >= date && (!rule || ruleFiresOn(ruleToInput(rule), d)),
         );

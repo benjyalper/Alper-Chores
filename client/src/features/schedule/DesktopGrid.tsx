@@ -7,8 +7,7 @@ import type {
 import { formatDisplayDate } from '@shared/dates';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
-
-const WEEKDAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { weekdayShort } from '../../utils/weekdays';
 
 interface Props {
   schedule: WeeklyScheduleDTO;
@@ -34,12 +33,12 @@ export function DesktopGrid({
         style={{ gridTemplateColumns: `repeat(7, minmax(180px, 1fr))` }}
       >
         {/* Day headers */}
-        {schedule.days.map((day, i) => (
+        {schedule.days.map((day) => (
           <div
             key={day.date}
             className={`day-head${day.isToday ? ' day-head--today' : ''}`}
           >
-            <span className="day-head__name">{WEEKDAY_NAMES[i]}</span>
+            <span className="day-head__name">{weekdayShort(day.weekday)}</span>
             <span className="day-head__date">
               {formatDisplayDate(day.date, schedule.timezone).replace(/^\w+, /, '')}
             </span>

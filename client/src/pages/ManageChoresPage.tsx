@@ -134,6 +134,9 @@ export function ManageChoresPage() {
             placeholder={t('new_category')}
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
           <button
             className="btn btn--ghost"

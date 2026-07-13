@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type {
   AssignmentScope,
   FamilyMemberDTO,
@@ -28,12 +29,15 @@ export function DesktopGrid({
 }: Props) {
   const { t, code } = useI18n();
 
+  // A single 7-column grid holds the day headers, each category's full-width
+  // title row, and every day cell — so header and card columns always line up
+  // (previously the header and card grids were separate and could diverge,
+  // clipping the edge column, especially in RTL).
+  const cols = `repeat(7, minmax(150px, 1fr))`;
+
   return (
     <div className="grid-scroll">
-      <div
-        className="week-grid"
-        style={{ gridTemplateColumns: `repeat(7, minmax(180px, 1fr))` }}
-      >
+      <div className="week-grid" style={{ gridTemplateColumns: cols }}>
         {/* Day headers */}
         {schedule.days.map((day) => (
           <div
@@ -60,41 +64,38 @@ export function DesktopGrid({
           );
           if (!anyInWeek) return null;
           return (
-            <div key={cat.id} className="cat-block" style={{ gridColumn: '1 / -1' }}>
-              <h3 className="cat-title">{contentName(cat.name, code)}</h3>
-              <div
-                className="cat-cells"
-                style={{ gridTemplateColumns: `repeat(7, minmax(180px, 1fr))` }}
-              >
-                {schedule.days.map((day) => {
-                  const items = day.occurrences.filter(
-                    (o) => o.categoryId === cat.id,
-                  );
-                  return (
-                    <div
-                      key={day.date + cat.id}
-                      className={`cell${day.isToday ? ' cell--today' : ''}`}
-                    >
-                      {items.length === 0 ? (
-                        <span className="cell__empty">—</span>
-                      ) : (
-                        items.map((occ) => (
-                          <OccurrenceCard
-                            key={occ.occurrenceKey}
-                            occ={occ}
-                            members={members}
-                            onAssign={onAssign}
-                            onStatus={onStatus}
-                            onOpenMeal={onOpenMeal}
-                            onReset={onReset}
-                          />
-                        ))
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <Fragment key={cat.id}>
+              <h3 className="cat-title" style={{ gridColumn: '1 / -1' }}>
+                {contentName(cat.name, code)}
+              </h3>
+              {schedule.days.map((day) => {
+                const items = day.occurrences.filter(
+                  (o) => o.categoryId === cat.id,
+                );
+                return (
+                  <div
+                    key={day.date + cat.id}
+                    className={`cell${day.isToday ? ' cell--today' : ''}`}
+                  >
+                    {items.length === 0 ? (
+                      <span className="cell__empty">—</span>
+                    ) : (
+                      items.map((occ) => (
+                        <OccurrenceCard
+                          key={occ.occurrenceKey}
+                          occ={occ}
+                          members={members}
+                          onAssign={onAssign}
+                          onStatus={onStatus}
+                          onOpenMeal={onOpenMeal}
+                          onReset={onReset}
+                        />
+                      ))
+                    )}
+                  </div>
+                );
+              })}
+            </Fragment>
           );
         })}
       </div>

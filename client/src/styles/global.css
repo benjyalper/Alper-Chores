@@ -383,20 +383,13 @@ button {
   color: var(--text-muted);
   font-weight: 700;
 }
-.cat-block {
-  margin-top: 6px;
-}
 .cat-title {
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  margin: 10px 0 6px;
+  margin: 10px 0 0;
   font-weight: 800;
-}
-.cat-cells {
-  display: grid;
-  gap: 10px;
 }
 .cell {
   display: flex;

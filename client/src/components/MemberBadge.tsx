@@ -1,6 +1,7 @@
 import type { FamilyMemberDTO } from '@shared/types';
 import { contrastText } from '../utils/members';
 import { useI18n } from '../i18n/I18nContext';
+import { contentName } from '../i18n/content';
 
 export function MemberBadge({
   member,
@@ -9,7 +10,7 @@ export function MemberBadge({
   member: FamilyMemberDTO | null;
   size?: 'sm' | 'md';
 }) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   if (!member) {
     return (
       <span className={`badge badge--empty badge--${size}`}>
@@ -24,7 +25,7 @@ export function MemberBadge({
       style={{ backgroundColor: bg, color: contrastText(bg) }}
     >
       <span aria-hidden="true">{member.emoji ?? '•'}</span>
-      <span>{member.name}</span>
+      <span>{contentName(member.name, code)}</span>
       {!member.isActive && (
         <span className="badge__inactive"> {t('inactive_suffix')}</span>
       )}

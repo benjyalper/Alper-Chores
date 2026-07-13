@@ -461,8 +461,31 @@ button {
 }
 .card__indicators {
   display: flex;
+  align-items: center;
   gap: 3px;
   flex-shrink: 0;
+}
+.card__status-icons {
+  display: inline-flex;
+  gap: 3px;
+}
+.reset-btn {
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  justify-content: center;
+}
+.reset-btn:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+.reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .card__controls {
   display: flex;

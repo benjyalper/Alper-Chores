@@ -9,6 +9,7 @@ import type {
 import { Dialog } from '../../components/Dialog';
 import { MemberSelect } from '../../components/MemberSelect';
 import { useI18n } from '../../i18n/I18nContext';
+import { contentName } from '../../i18n/content';
 import { isoWeekdayShort } from '../../utils/format';
 
 export interface ChoreFormValue {
@@ -134,7 +135,7 @@ export function ChoreForm({
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {contentName(c.name, code)}
               </option>
             ))}
           </select>

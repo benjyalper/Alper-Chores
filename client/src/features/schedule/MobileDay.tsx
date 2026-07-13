@@ -7,6 +7,7 @@ import type {
 } from '@shared/types';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
+import { contentName } from '../../i18n/content';
 import { getLastDayIndex, setLastDayIndex } from '../../utils/members';
 import { weekdayDate, weekdayShort } from '../../utils/format';
 
@@ -16,6 +17,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
+  onReset: (occ: OccurrenceDTO) => void;
 }
 
 export function MobileDay({
@@ -24,6 +26,7 @@ export function MobileDay({
   onAssign,
   onStatus,
   onOpenMeal,
+  onReset,
 }: Props) {
   const { t, code } = useI18n();
   const todayIdx = schedule.days.findIndex((d) => d.isToday);
@@ -86,7 +89,7 @@ export function MobileDay({
           if (items.length === 0) return null;
           return (
             <section key={cat.id} className="mobile-cat">
-              <h3 className="cat-title">{cat.name}</h3>
+              <h3 className="cat-title">{contentName(cat.name, code)}</h3>
               {items.map((occ) => (
                 <OccurrenceCard
                   key={occ.occurrenceKey}
@@ -95,6 +98,7 @@ export function MobileDay({
                   onAssign={onAssign}
                   onStatus={onStatus}
                   onOpenMeal={onOpenMeal}
+                  onReset={onReset}
                 />
               ))}
             </section>

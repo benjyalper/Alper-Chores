@@ -8,6 +8,7 @@ import { MemberSelect } from '../../components/MemberSelect';
 import { StatusControl } from '../../components/StatusControl';
 import { ScopeDialog } from '../../components/ScopeDialog';
 import { useI18n } from '../../i18n/I18nContext';
+import { contentName } from '../../i18n/content';
 import { setLastMemberId } from '../../utils/members';
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
+  onReset: (occ: OccurrenceDTO) => void;
   busy?: boolean;
 }
 
@@ -33,9 +35,10 @@ export function OccurrenceCard({
   onAssign,
   onStatus,
   onOpenMeal,
+  onReset,
   busy,
 }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const [pendingMember, setPendingMember] = useState<string | null | undefined>(
     undefined,
   );
@@ -78,23 +81,34 @@ export function OccurrenceCard({
         <div className="card__title-row">
           {occ.time && <span className="card__time">{occ.time}</span>}
           {occ.timeSlotLabel && (
-            <span className="chip chip--slot">{occ.timeSlotLabel}</span>
+            <span className="chip chip--slot">
+              {contentName(occ.timeSlotLabel, code)}
+            </span>
           )}
-          <span className="card__name">{occ.name}</span>
+          <span className="card__name">{contentName(occ.name, code)}</span>
         </div>
-        <div className="card__indicators" aria-hidden="true">
-          {occ.isRecurring && (
-            <span className="chip chip--recurring" title={t('indicator_repeats')}>
-              ⟳
-            </span>
-          )}
-          {occ.hasNotes && (
-            <span className="chip chip--notes" title={t('indicator_notes')}>
-              📝
-            </span>
-          )}
-          {occ.status === 'COMPLETED' && <span className="chip chip--ok">✓</span>}
-          {occ.status === 'SKIPPED' && <span className="chip chip--skip chip--active">⤼</span>}
+        <div className="card__indicators">
+          <span aria-hidden="true" className="card__status-icons">
+            {occ.hasNotes && (
+              <span className="chip chip--notes" title={t('indicator_notes')}>
+                📝
+              </span>
+            )}
+            {occ.status === 'COMPLETED' && <span className="chip chip--ok">✓</span>}
+            {occ.status === 'SKIPPED' && (
+              <span className="chip chip--skip chip--active">⤼</span>
+            )}
+          </span>
+          <button
+            type="button"
+            className="chip chip--recurring reset-btn"
+            title={t('reset_chore')}
+            aria-label={t('reset_chore')}
+            onClick={() => onReset(occ)}
+            disabled={busy}
+          >
+            <span aria-hidden="true">↺</span>
+          </button>
         </div>
       </div>
 

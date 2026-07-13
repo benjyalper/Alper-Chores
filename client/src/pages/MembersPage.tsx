@@ -7,6 +7,7 @@ import { MemberSelect } from '../components/MemberSelect';
 import { Dialog } from '../components/Dialog';
 import { ListSkeleton } from '../components/Skeletons';
 import { useI18n } from '../i18n/I18nContext';
+import { contentName } from '../i18n/content';
 import { useToast } from '../components/Toast';
 
 const PRESET_COLORS = [
@@ -23,7 +24,7 @@ const PRESET_COLORS = [
 const EMPTY = { name: '', color: PRESET_COLORS[0], emoji: '🙂' };
 
 export function MembersPage() {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const toast = useToast();
   const members = useMembers(true);
   const { create, update, deactivate, reactivate } = useMemberMutations();
@@ -258,7 +259,7 @@ export function MembersPage() {
         <Dialog
           open={!!deactivateTarget}
           onClose={() => setDeactivateTarget(null)}
-          title={`${t('member_deactivate')} — ${deactivateTarget.name}`}
+          title={`${t('member_deactivate')} — ${contentName(deactivateTarget.name, code)}`}
           footer={
             <>
               <button className="btn btn--ghost" onClick={() => setDeactivateTarget(null)}>

@@ -1,5 +1,6 @@
 import { useConfig } from '../api/hooks';
 import { useI18n } from '../i18n/I18nContext';
+import { contentName } from '../i18n/content';
 
 export function SettingsPage() {
   const { t, code, languages, setLanguage } = useI18n();
@@ -39,7 +40,7 @@ export function SettingsPage() {
           <dl className="settings-list">
             <div>
               <dt>{t('member_name')}</dt>
-              <dd>{config.data?.householdName}</dd>
+              <dd>{contentName(config.data?.householdName, code)}</dd>
             </div>
             <div>
               <dt>{t('settings_timezone')}</dt>

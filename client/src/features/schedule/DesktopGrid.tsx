@@ -6,6 +6,7 @@ import type {
 } from '@shared/types';
 import { OccurrenceCard } from './OccurrenceCard';
 import { useI18n } from '../../i18n/I18nContext';
+import { contentName } from '../../i18n/content';
 import { monthDay, weekdayShort } from '../../utils/format';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
+  onReset: (occ: OccurrenceDTO) => void;
 }
 
 export function DesktopGrid({
@@ -22,6 +24,7 @@ export function DesktopGrid({
   onAssign,
   onStatus,
   onOpenMeal,
+  onReset,
 }: Props) {
   const { t, code } = useI18n();
 
@@ -58,7 +61,7 @@ export function DesktopGrid({
           if (!anyInWeek) return null;
           return (
             <div key={cat.id} className="cat-block" style={{ gridColumn: '1 / -1' }}>
-              <h3 className="cat-title">{cat.name}</h3>
+              <h3 className="cat-title">{contentName(cat.name, code)}</h3>
               <div
                 className="cat-cells"
                 style={{ gridTemplateColumns: `repeat(7, minmax(180px, 1fr))` }}
@@ -83,6 +86,7 @@ export function DesktopGrid({
                             onAssign={onAssign}
                             onStatus={onStatus}
                             onOpenMeal={onOpenMeal}
+                            onReset={onReset}
                           />
                         ))
                       )}

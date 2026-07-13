@@ -8,6 +8,7 @@ import { Dialog } from '../../components/Dialog';
 import { MemberSelect } from '../../components/MemberSelect';
 import { useMeal, useSetMeal } from '../../api/hooks';
 import { useI18n } from '../../i18n/I18nContext';
+import { contentName } from '../../i18n/content';
 import { useToast } from '../../components/Toast';
 
 interface Props {
@@ -27,7 +28,7 @@ const PLAN_TYPES: { value: MealPlanType; key: string }[] = [
 const isValidUrl = (v: string) => v === '' || /^https?:\/\/.+/i.test(v);
 
 export function MealDialog({ occ, members, onClose }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const toast = useToast();
   const meal = useMeal(occ?.occurrenceKey ?? null);
   const setMeal = useSetMeal();
@@ -90,7 +91,7 @@ export function MealDialog({ occ, members, onClose }: Props) {
     <Dialog
       open={!!occ}
       onClose={onClose}
-      title={`${occ.name} · ${occ.date}`}
+      title={`${contentName(occ.name, code)} · ${occ.date}`}
       footer={
         <>
           <button type="button" className="btn btn--ghost" onClick={onClose}>

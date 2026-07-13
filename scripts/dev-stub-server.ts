@@ -71,6 +71,16 @@ app.get('/api/config', (_req, res) =>
   res.json({ householdId: 'h1', householdName: 'Alper Family', timezone: TZ, weekStartsOn: 'MONDAY' }));
 app.get('/api/members', (_req, res) => res.json(members));
 app.get('/api/categories', (_req, res) => res.json(categories));
+app.post('/api/categories', (req, res) => {
+  const cat = {
+    id: 'cat_' + Math.random().toString(36).slice(2, 7),
+    name: String(req.body?.name ?? 'New'),
+    sortOrder: categories.length,
+    isMealCategory: false,
+  };
+  categories.push(cat);
+  res.status(201).json(cat);
+});
 app.get('/api/chores', (_req, res) =>
   res.json(templates.map((t) => ({
     id: t.id, categoryId: t.categoryId, name: t.name, description: t.description,
@@ -144,6 +154,11 @@ app.put('/api/occurrences/:key/meal', (req, res) => {
   const p = parseOccurrenceKey(req.params.key);
   if (!p) return res.status(400).json({ error: { message: 'bad key' } });
   meals.set(req.params.key, { occurrenceDate: p.date, ...req.body });
+  res.json({ ok: true });
+});
+app.post('/api/occurrences/:key/reset', (req, res) => {
+  overrides.delete(req.params.key);
+  completions.delete(req.params.key);
   res.json({ ok: true });
 });
 app.post('/api/chores', (req, res) => res.status(201).json({ id: 'new', ...req.body }));

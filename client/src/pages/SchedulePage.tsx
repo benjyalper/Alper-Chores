@@ -8,6 +8,7 @@ import {
   useSchedule,
   useSetAssignment,
   useSetStatus,
+  useResetOccurrence,
   useChoreMutations,
   useCategories,
 } from '../api/hooks';
@@ -36,6 +37,7 @@ export function SchedulePage() {
   const categories = useCategories();
   const setAssignment = useSetAssignment();
   const setStatus = useSetStatus();
+  const resetOccurrence = useResetOccurrence();
   const { create } = useChoreMutations();
 
   const [mealOcc, setMealOcc] = useState<OccurrenceDTO | null>(null);
@@ -63,6 +65,15 @@ export function SchedulePage() {
   const handleStatus = async (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => {
     try {
       await setStatus.mutateAsync({ occurrenceKey: occ.occurrenceKey, status });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('save_failed'));
+    }
+  };
+
+  const handleReset = async (occ: OccurrenceDTO) => {
+    try {
+      await resetOccurrence.mutateAsync(occ.occurrenceKey);
+      toast.success(t('saved'));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('save_failed'));
     }
@@ -133,6 +144,7 @@ export function SchedulePage() {
               onAssign={handleAssign}
               onStatus={handleStatus}
               onOpenMeal={setMealOcc}
+              onReset={handleReset}
             />
           ) : (
             <DesktopGrid
@@ -141,6 +153,7 @@ export function SchedulePage() {
               onAssign={handleAssign}
               onStatus={handleStatus}
               onOpenMeal={setMealOcc}
+              onReset={handleReset}
             />
           )}
         </>

@@ -1,5 +1,6 @@
 import type { FamilyMemberDTO } from '@shared/types';
 import { useI18n } from '../i18n/I18nContext';
+import { contentName } from '../i18n/content';
 
 interface Props {
   members: FamilyMemberDTO[];
@@ -19,7 +20,7 @@ export function MemberSelect({
   disabled,
   ariaLabel,
 }: Props) {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const active = members.filter((m) => m.isActive || m.id === value);
   return (
     <select
@@ -34,7 +35,7 @@ export function MemberSelect({
       {active.map((m) => (
         <option key={m.id} value={m.id}>
           {m.emoji ? `${m.emoji} ` : ''}
-          {m.name}
+          {contentName(m.name, code)}
           {!m.isActive ? ` (${t('member_inactive_label')})` : ''}
         </option>
       ))}

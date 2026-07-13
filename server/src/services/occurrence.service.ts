@@ -133,6 +133,27 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
   });
 }
 
+// ---- Reset -----------------------------------------------------------------
+
+/**
+ * Reset a single occurrence back to its recurring default: remove the dated
+ * completion (status -> Pending) and the dated override (assignee/name/time/
+ * cancellation -> recurrence default). Meal details are left intact.
+ */
+export async function resetOccurrence(occurrenceKey: string) {
+  const { template, date } = await loadOccurrenceTemplate(occurrenceKey);
+  const occurrenceDate = localDateToUtcMidnight(date);
+  await prisma.$transaction([
+    prisma.choreCompletion.deleteMany({
+      where: { choreTemplateId: template.id, occurrenceDate },
+    }),
+    prisma.choreOccurrenceOverride.deleteMany({
+      where: { choreTemplateId: template.id, occurrenceDate },
+    }),
+  ]);
+  return { ok: true, occurrenceKey };
+}
+
 // ---- Completion status -----------------------------------------------------
 
 export async function setStatus(occurrenceKey: string, input: StatusInput) {

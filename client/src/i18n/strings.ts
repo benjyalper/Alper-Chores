@@ -54,6 +54,7 @@ const en: Record<string, string> = {
 
   indicator_repeats: 'Repeats',
   indicator_notes: 'Has notes',
+  reset_chore: 'Reset to default',
 
   meal_title: 'Meal details',
   meal_plan_type: 'Meal plan',
@@ -155,7 +156,7 @@ const en: Record<string, string> = {
 };
 
 const he: Record<string, string> = {
-  appName: 'Alper Chores',
+  appName: 'מטלות משפחת אלפר',
   nav_schedule: 'שבוע',
   nav_members: 'משפחה',
   nav_chores: 'מטלות',
@@ -198,6 +199,7 @@ const he: Record<string, string> = {
 
   indicator_repeats: 'חוזר',
   indicator_notes: 'יש הערות',
+  reset_chore: 'איפוס לברירת מחדל',
 
   meal_title: 'פרטי ארוחה',
   meal_plan_type: 'סוג ארוחה',
@@ -250,7 +252,7 @@ const he: Record<string, string> = {
   done_count: '{done} מתוך {total} בוצעו',
 
   offline: 'אין חיבור — מוצגים הנתונים האחרונים שנטענו. לא ניתן לשמור שינויים.',
-  install_hint: 'התקינו את Alper Chores במכשיר לגישה מהירה.',
+  install_hint: 'התקינו את מטלות משפחת אלפר במכשיר לגישה מהירה.',
   install: 'התקנה',
   dismiss: 'סגירה',
 
@@ -291,7 +293,7 @@ const he: Record<string, string> = {
   settings_install_ios:
     'באייפון (Safari): הקישו על כפתור השיתוף ולאחר מכן "הוסף למסך הבית".',
   settings_about: 'אודות',
-  settings_about_text: 'Alper Chores — מארגן מטלות וארוחות שבועי למשפחה. גרסה 1.',
+  settings_about_text: 'מטלות משפחת אלפר — מארגן מטלות וארוחות שבועי למשפחה. גרסה 1.',
   week_starts_sunday: 'ראשון',
   week_starts_monday: 'שני',
 };

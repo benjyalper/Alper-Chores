@@ -98,6 +98,7 @@ describe('OccurrenceCard', () => {
           onAssign={() => {}}
           onStatus={() => {}}
           onOpenMeal={() => {}}
+          onReset={() => {}}
         />,
       ),
     );
@@ -115,6 +116,7 @@ describe('OccurrenceCard', () => {
           onAssign={onAssign}
           onStatus={() => {}}
           onOpenMeal={() => {}}
+          onReset={() => {}}
         />,
       ),
     );

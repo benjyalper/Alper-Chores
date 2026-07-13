@@ -11,6 +11,7 @@ import { useMembers } from '../api/hooks';
 import { ChoreForm, type ChoreFormValue } from '../features/schedule/ChoreForm';
 import { ListSkeleton } from '../components/Skeletons';
 import { useI18n } from '../i18n/I18nContext';
+import { contentName } from '../i18n/content';
 import { useToast } from '../components/Toast';
 
 const FREQ_KEY: Record<string, string> = {
@@ -21,7 +22,7 @@ const FREQ_KEY: Record<string, string> = {
 };
 
 export function ManageChoresPage() {
-  const { t } = useI18n();
+  const { t, code } = useI18n();
   const toast = useToast();
   const chores = useChores(true);
   const categories = useCategories();
@@ -145,7 +146,7 @@ export function ManageChoresPage() {
         <div className="cat-chips">
           {(categories.data ?? []).map((c) => (
             <span key={c.id} className="chip chip--slot">
-              {c.name}
+              {contentName(c.name, code)}
             </span>
           ))}
         </div>
@@ -173,10 +174,12 @@ export function ManageChoresPage() {
               {chores.data!.map((c) => (
                 <tr key={c.id} className={c.isActive ? '' : 'row--inactive'}>
                   <td data-label={t('th_name')}>
-                    {c.name}
+                    {contentName(c.name, code)}
                     {c.isMeal && <span className="chip chip--slot">{t('meal_badge')}</span>}
                   </td>
-                  <td data-label={t('category')}>{catName.get(c.categoryId) ?? '—'}</td>
+                  <td data-label={t('category')}>
+                    {contentName(catName.get(c.categoryId) ?? '—', code)}
+                  </td>
                   <td data-label={t('recurrence')}>
                     {c.recurrence ? t(FREQ_KEY[c.recurrence.frequency]) : '—'}
                   </td>

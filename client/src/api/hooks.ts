@@ -85,6 +85,15 @@ export function useSetStatus() {
   });
 }
 
+export function useResetOccurrence() {
+  const invalidate = useInvalidateSchedule();
+  return useMutation({
+    mutationFn: (occurrenceKey: string) =>
+      api.post(`/occurrences/${encodeURIComponent(occurrenceKey)}/reset`),
+    onSuccess: () => invalidate(),
+  });
+}
+
 // ---- Meals -----------------------------------------------------------------
 
 export function useMeal(occurrenceKey: string | null) {
@@ -162,7 +171,10 @@ export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: unknown) => api.post<CategoryDTO>('/categories', body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: ['schedule'] });
+    },
   });
 }
 

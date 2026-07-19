@@ -99,6 +99,12 @@ const en: Record<string, string> = {
   scope_rest_of_week: 'The rest of this week',
   scope_this_and_future: 'This and future weeks',
   scope_entire_series: 'The entire series',
+  scope_this_only: 'This occurrence',
+  scope_recurring: 'Recurring (every week)',
+
+  reset_scope_question: 'Reset which occurrences?',
+  reset_one: 'This occurrence only',
+  reset_future: 'This and following weeks',
 
   empty_day: 'This day is all organized.',
   empty_no_assignee: 'No one is assigned yet.',
@@ -244,6 +250,12 @@ const he: Record<string, string> = {
   scope_rest_of_week: 'שאר השבוע',
   scope_this_and_future: 'שבוע זה והשבועות הבאים',
   scope_entire_series: 'כל הסדרה',
+  scope_this_only: 'מופע זה',
+  scope_recurring: 'אירוע חוזר',
+
+  reset_scope_question: 'לאפס אילו מופעים?',
+  reset_one: 'מופע זה בלבד',
+  reset_future: 'מופע זה והשבועות הבאים',
 
   empty_day: 'היום הזה מסודר לגמרי.',
   empty_no_assignee: 'עדיין לא שויך אף אחד.',

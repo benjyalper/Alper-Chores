@@ -16,6 +16,7 @@ import type {
   AssignmentInput,
   MealInput,
   OccurrenceEditInput,
+  ResetInput,
   StatusInput,
 } from '../validation/schemas.js';
 
@@ -136,13 +137,51 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
 // ---- Reset -----------------------------------------------------------------
 
 /**
- * Reset a single occurrence back to its recurring default: remove the dated
+ * Reset an occurrence back to its recurring default: remove the dated
  * completion (status -> Pending) and the dated override (assignee/name/time/
  * cancellation -> recurrence default). Meal details are left intact.
+ *
+ * scope 'occurrence' (default) touches only this date. scope 'this-and-future'
+ * also clears every dated completion/override from this date forward AND drops
+ * any forward assignment rules, reopening the one in effect just before this
+ * date, so all following weeks fall back to the base series default.
  */
-export async function resetOccurrence(occurrenceKey: string) {
-  const { template, date } = await loadOccurrenceTemplate(occurrenceKey);
+export async function resetOccurrence(
+  occurrenceKey: string,
+  input: ResetInput = { scope: 'occurrence' },
+) {
+  const { template, date, rule } = await loadOccurrenceTemplate(occurrenceKey);
   const occurrenceDate = localDateToUtcMidnight(date);
+
+  if (input.scope === 'this-and-future') {
+    return prisma.$transaction(async (tx) => {
+      await tx.choreCompletion.deleteMany({
+        where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
+      });
+      await tx.choreOccurrenceOverride.deleteMany({
+        where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
+      });
+      if (rule) {
+        // Drop assignment rules that start on/after this date, then reopen the
+        // one that was in effect just before it so the base default resumes.
+        await tx.assignmentRule.deleteMany({
+          where: { recurrenceRuleId: rule.id, effectiveFrom: { gte: occurrenceDate } },
+        });
+        const prior = await tx.assignmentRule.findFirst({
+          where: { recurrenceRuleId: rule.id, effectiveFrom: { lt: occurrenceDate } },
+          orderBy: { effectiveFrom: 'desc' },
+        });
+        if (prior && prior.effectiveUntil) {
+          await tx.assignmentRule.update({
+            where: { id: prior.id },
+            data: { effectiveUntil: null },
+          });
+        }
+      }
+      return { ok: true, occurrenceKey, scope: input.scope };
+    });
+  }
+
   await prisma.$transaction([
     prisma.choreCompletion.deleteMany({
       where: { choreTemplateId: template.id, occurrenceDate },
@@ -151,7 +190,7 @@ export async function resetOccurrence(occurrenceKey: string) {
       where: { choreTemplateId: template.id, occurrenceDate },
     }),
   ]);
-  return { ok: true, occurrenceKey };
+  return { ok: true, occurrenceKey, scope: input.scope };
 }
 
 // ---- Completion status -----------------------------------------------------

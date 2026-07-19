@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type {
   AssignmentScope,
   OccurrenceDTO,
+  ResetScope,
 } from '@shared/types';
 import { addLocalDays, startOfWeek, todayLocalDate } from '@shared/dates';
 import {
@@ -70,9 +71,9 @@ export function SchedulePage() {
     }
   };
 
-  const handleReset = async (occ: OccurrenceDTO) => {
+  const handleReset = async (occ: OccurrenceDTO, scope: ResetScope) => {
     try {
-      await resetOccurrence.mutateAsync(occ.occurrenceKey);
+      await resetOccurrence.mutateAsync({ occurrenceKey: occ.occurrenceKey, scope });
       toast.success(t('saved'));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('save_failed'));

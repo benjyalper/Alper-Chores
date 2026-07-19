@@ -16,6 +16,7 @@ import type {
   WeeklyScheduleDTO,
   AssignmentScope,
   CompletionStatus,
+  ResetScope,
 } from '@shared/types';
 
 // ---- Config ----------------------------------------------------------------
@@ -88,8 +89,10 @@ export function useSetStatus() {
 export function useResetOccurrence() {
   const invalidate = useInvalidateSchedule();
   return useMutation({
-    mutationFn: (occurrenceKey: string) =>
-      api.post(`/occurrences/${encodeURIComponent(occurrenceKey)}/reset`),
+    mutationFn: (v: { occurrenceKey: string; scope: ResetScope }) =>
+      api.post(`/occurrences/${encodeURIComponent(v.occurrenceKey)}/reset`, {
+        scope: v.scope,
+      }),
     onSuccess: () => invalidate(),
   });
 }

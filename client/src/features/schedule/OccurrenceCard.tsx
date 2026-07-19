@@ -3,10 +3,12 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
+  ResetScope,
 } from '@shared/types';
 import { MemberSelect } from '../../components/MemberSelect';
 import { StatusControl } from '../../components/StatusControl';
 import { ScopeDialog } from '../../components/ScopeDialog';
+import { Dialog } from '../../components/Dialog';
 import { useI18n } from '../../i18n/I18nContext';
 import { contentName } from '../../i18n/content';
 import { setLastMemberId } from '../../utils/members';
@@ -17,7 +19,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onReset: (occ: OccurrenceDTO) => void;
+  onReset: (occ: OccurrenceDTO, scope: ResetScope) => void;
   busy?: boolean;
 }
 
@@ -43,6 +45,8 @@ export function OccurrenceCard({
     undefined,
   );
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetScope, setResetScope] = useState<ResetScope>('occurrence');
 
   const handleChange = (memberId: string | null) => {
     setLastMemberId(memberId);
@@ -58,6 +62,22 @@ export function OccurrenceCard({
     onAssign(occ, pendingMember ?? null, scope);
     setScopeOpen(false);
     setPendingMember(undefined);
+  };
+
+  const handleResetClick = () => {
+    // Recurring chores ask whether to revert just this slot or all following
+    // weeks too; one-off chores have nothing beyond this occurrence to reset.
+    if (occ.isRecurring) {
+      setResetScope('occurrence');
+      setResetOpen(true);
+    } else {
+      onReset(occ, 'occurrence');
+    }
+  };
+
+  const confirmReset = () => {
+    onReset(occ, resetScope);
+    setResetOpen(false);
   };
 
   const statusClass =
@@ -104,7 +124,7 @@ export function OccurrenceCard({
             className="chip chip--recurring reset-btn"
             title={t('reset_chore')}
             aria-label={t('reset_chore')}
-            onClick={() => onReset(occ)}
+            onClick={handleResetClick}
             disabled={busy}
           >
             <span aria-hidden="true">↺</span>
@@ -152,6 +172,50 @@ export function OccurrenceCard({
         }}
         onConfirm={confirmScope}
       />
+
+      {resetOpen && (
+        <Dialog
+          open={resetOpen}
+          onClose={() => setResetOpen(false)}
+          title={t('reset_scope_question')}
+          footer={
+            <>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => setResetOpen(false)}
+              >
+                {t('cancel')}
+              </button>
+              <button type="button" className="btn btn--primary" onClick={confirmReset}>
+                {t('reset_chore')}
+              </button>
+            </>
+          }
+        >
+          <fieldset className="scope-options">
+            <legend className="sr-only">{t('reset_scope_question')}</legend>
+            <label className="scope-option">
+              <input
+                type="radio"
+                name={`reset-${occ.occurrenceKey}`}
+                checked={resetScope === 'occurrence'}
+                onChange={() => setResetScope('occurrence')}
+              />
+              <span>{t('reset_one')}</span>
+            </label>
+            <label className="scope-option">
+              <input
+                type="radio"
+                name={`reset-${occ.occurrenceKey}`}
+                checked={resetScope === 'this-and-future'}
+                onChange={() => setResetScope('this-and-future')}
+              />
+              <span>{t('reset_future')}</span>
+            </label>
+          </fieldset>
+        </Dialog>
+      )}
     </div>
   );
 }

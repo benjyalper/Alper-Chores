@@ -21,17 +21,14 @@ export function ScopeDialog({ open, onClose, onConfirm, recurring, title }: Prop
   const { t } = useI18n();
   const [scope, setScope] = useState<AssignmentScope>('occurrence');
 
+  // Recurring chores offer just two choices: this single slot, or the slot on
+  // every week from here on. Non-recurring chores only ever touch one slot.
   const options: { value: AssignmentScope; label: string }[] = recurring
     ? [
-        { value: 'occurrence', label: t('scope_occurrence') },
-        { value: 'rest-of-week', label: t('scope_rest_of_week') },
-        { value: 'this-and-future', label: t('scope_this_and_future') },
-        { value: 'entire-series', label: t('scope_entire_series') },
+        { value: 'occurrence', label: t('scope_this_only') },
+        { value: 'this-and-future', label: t('scope_recurring') },
       ]
-    : [
-        { value: 'occurrence', label: t('scope_occurrence') },
-        { value: 'rest-of-week', label: t('scope_rest_of_week') },
-      ];
+    : [{ value: 'occurrence', label: t('scope_this_only') }];
 
   return (
     <Dialog

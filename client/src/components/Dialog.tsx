@@ -50,7 +50,12 @@ export function Dialog({ open, onClose, title, children, footer }: DialogProps) 
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
-      previouslyFocused.current?.focus();
+      // Restore focus to whatever was focused before the dialog — but NOT if it
+      // was a <select>. On iOS Safari, programmatically focusing a <select>
+      // re-opens its native option picker, so after saving an assignment the
+      // member dropdown would spring back open. Skip the restore in that case.
+      const prev = previouslyFocused.current;
+      if (prev && prev.tagName !== 'SELECT') prev.focus();
     };
   }, [open, onClose]);
 

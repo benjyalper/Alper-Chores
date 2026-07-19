@@ -3,6 +3,7 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
+  ResetScope,
   WeeklyScheduleDTO,
 } from '@shared/types';
 import { OccurrenceCard } from './OccurrenceCard';
@@ -17,7 +18,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onReset: (occ: OccurrenceDTO) => void;
+  onReset: (occ: OccurrenceDTO, scope: ResetScope) => void;
 }
 
 export function MobileDay({

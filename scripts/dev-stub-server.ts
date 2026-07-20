@@ -64,6 +64,8 @@ const templates: TemplateInput[] = [
 
 const overrides = new Map<string, OverrideInput>();
 const completions = new Map<string, CompletionInput>();
+// templateId -> { weekday(1..7) -> fromLocalDate }: deleted weekday from a date on.
+const weekdayStops = new Map<string, Map<number, string>>();
 const meals = new Map<string, MealInput & { restaurantUrl?: string | null; takeoutProvider?: string | null; notes?: string | null }>();
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', db: 'stub' }));
@@ -110,6 +112,10 @@ app.get('/api/schedule', (req, res) => {
       dates,
     );
     for (const r of resolved) {
+      // Honor weekday deletions ("delete this and following weeks").
+      const stops = weekdayStops.get(t.id);
+      const stopFrom = stops?.get(isoWeekday(r.date));
+      if (stopFrom && r.date >= stopFrom) continue;
       dayOcc.get(r.date)!.push({
         occurrenceKey: occurrenceKey(r.templateId, r.date), templateId: r.templateId,
         categoryId: r.categoryId, name: r.name, description: r.description, date: r.date,
@@ -156,20 +162,28 @@ app.put('/api/occurrences/:key/meal', (req, res) => {
   meals.set(req.params.key, { occurrenceDate: p.date, ...req.body });
   res.json({ ok: true });
 });
-app.post('/api/occurrences/:key/reset', (req, res) => {
+app.post('/api/occurrences/:key/delete', (req, res) => {
   const p = parseOccurrenceKey(req.params.key);
   if (!p) return res.status(400).json({ error: { message: 'bad key' } });
   const scope = req.body?.scope ?? 'occurrence';
   if (scope === 'this-and-future') {
-    // Clear this template's overrides/completions on/after this date.
+    // Stop this weekday from this date on; clear its future overrides/completions.
+    const wd = isoWeekday(p.date);
+    if (!weekdayStops.has(p.templateId)) weekdayStops.set(p.templateId, new Map());
+    weekdayStops.get(p.templateId)!.set(wd, p.date);
     for (const map of [overrides, completions]) {
       for (const k of [...map.keys()]) {
         const kp = parseOccurrenceKey(k);
-        if (kp && kp.templateId === p.templateId && kp.date >= p.date) map.delete(k);
+        if (kp && kp.templateId === p.templateId && kp.date >= p.date && isoWeekday(kp.date) === wd)
+          map.delete(k);
       }
     }
   } else {
-    overrides.delete(req.params.key);
+    // Hide just this date with a cancelled override; drop its completion.
+    overrides.set(req.params.key, {
+      occurrenceDate: p.date, assignedMemberId: null, hasAssignment: false,
+      nameOverride: null, timeOverride: null, isCancelled: true, notes: null,
+    });
     completions.delete(req.params.key);
   }
   res.json({ ok: true, scope });

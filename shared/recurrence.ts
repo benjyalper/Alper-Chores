@@ -64,6 +64,8 @@ export interface AssignmentRuleInput {
   familyMemberId: string | null;
   effectiveFrom: string;
   effectiveUntil: string | null;
+  /** ISO weekday (1..7) this default applies to; null => every firing day. */
+  dayOfWeek: number | null;
 }
 
 export interface OverrideInput {
@@ -132,17 +134,48 @@ export function ruleFiresOn(rule: RuleInput, localDate: string): boolean {
   }
 }
 
+/** ISO weekdays (1..7) a rule can fire on, ignoring interval and date bounds. */
+export function effectiveWeekdays(rule: RuleInput): number[] {
+  switch (rule.frequency) {
+    case 'DAILY':
+      return [1, 2, 3, 4, 5, 6, 7];
+    case 'ONCE':
+      return [isoWeekday(rule.startDate)];
+    case 'WEEKLY':
+    case 'CUSTOM_WEEKLY':
+      return rule.daysOfWeek && rule.daysOfWeek.length > 0
+        ? [...rule.daysOfWeek]
+        : [isoWeekday(rule.startDate)];
+    default:
+      return [];
+  }
+}
+
 /** Resolve the default assignee for a date from the assignment rules. */
 export function resolveDefaultAssignee(
   rules: AssignmentRuleInput[],
   localDate: string,
 ): string | null {
-  // Latest effectiveFrom that covers the date wins.
+  const wd = isoWeekday(localDate);
+  // Latest effectiveFrom that covers the date wins; a weekday-scoped rule only
+  // applies on its weekday, and on a tie it beats an all-days (null) rule.
   let best: AssignmentRuleInput | null = null;
   for (const r of rules) {
     if (localDate < r.effectiveFrom) continue;
     if (r.effectiveUntil && localDate > r.effectiveUntil) continue;
-    if (!best || r.effectiveFrom > best.effectiveFrom) best = r;
+    if (r.dayOfWeek != null && r.dayOfWeek !== wd) continue;
+    if (!best) {
+      best = r;
+      continue;
+    }
+    if (
+      r.effectiveFrom > best.effectiveFrom ||
+      (r.effectiveFrom === best.effectiveFrom &&
+        r.dayOfWeek != null &&
+        best.dayOfWeek == null)
+    ) {
+      best = r;
+    }
   }
   return best ? best.familyMemberId : null;
 }

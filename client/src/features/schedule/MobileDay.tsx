@@ -3,7 +3,7 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
-  ResetScope,
+  DeleteScope,
   WeeklyScheduleDTO,
 } from '@shared/types';
 import { OccurrenceCard } from './OccurrenceCard';
@@ -18,7 +18,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onReset: (occ: OccurrenceDTO, scope: ResetScope) => void;
+  onDelete: (occ: OccurrenceDTO, scope: DeleteScope) => void;
 }
 
 export function MobileDay({
@@ -27,7 +27,7 @@ export function MobileDay({
   onAssign,
   onStatus,
   onOpenMeal,
-  onReset,
+  onDelete,
 }: Props) {
   const { t, code } = useI18n();
   const todayIdx = schedule.days.findIndex((d) => d.isToday);
@@ -99,7 +99,7 @@ export function MobileDay({
                   onAssign={onAssign}
                   onStatus={onStatus}
                   onOpenMeal={onOpenMeal}
-                  onReset={onReset}
+                  onDelete={onDelete}
                 />
               ))}
             </section>

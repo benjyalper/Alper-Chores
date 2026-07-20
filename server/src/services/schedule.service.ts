@@ -142,6 +142,7 @@ export async function getWeeklySchedule(
         familyMemberId: a.familyMemberId,
         effectiveFrom: utcMidnightToLocalDate(a.effectiveFrom),
         effectiveUntil: a.effectiveUntil ? utcMidnightToLocalDate(a.effectiveUntil) : null,
+        dayOfWeek: a.dayOfWeek ?? null,
       }),
     );
 

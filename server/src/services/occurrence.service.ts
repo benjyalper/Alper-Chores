@@ -6,17 +6,22 @@ import { prisma } from '../config/prisma.js';
 import { HttpError, badRequest, notFound } from '../utils/http-error.js';
 import {
   addLocalDays,
+  isoWeekday,
   localDateToUtcMidnight,
   utcMidnightToLocalDate,
   weekDates,
 } from '../../../shared/dates.js';
-import { parseOccurrenceKey, ruleFiresOn } from '../../../shared/recurrence.js';
+import {
+  effectiveWeekdays,
+  parseOccurrenceKey,
+  ruleFiresOn,
+} from '../../../shared/recurrence.js';
 import { ruleToInput } from './mappers.js';
 import type {
   AssignmentInput,
+  DeleteInput,
   MealInput,
   OccurrenceEditInput,
-  ResetInput,
   StatusInput,
 } from '../validation/schemas.js';
 
@@ -88,9 +93,11 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
 
       case 'this-and-future': {
         if (!rule) throw badRequest('This chore is not recurring');
-        // Close open assignment rules, add a new default from this date.
+        // "Recurring" means this same weekday every week from here on, so the
+        // default is scoped to this weekday and leaves the other days untouched.
+        const wd = isoWeekday(date);
         await tx.assignmentRule.updateMany({
-          where: { recurrenceRuleId: rule.id, effectiveUntil: null },
+          where: { recurrenceRuleId: rule.id, effectiveUntil: null, dayOfWeek: wd },
           data: { effectiveUntil: localDateToUtcMidnight(addLocalDays(date, -1)) },
         });
         await tx.assignmentRule.create({
@@ -98,17 +105,28 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
             recurrenceRuleId: rule.id,
             familyMemberId: input.memberId,
             effectiveFrom: localDateToUtcMidnight(date),
+            dayOfWeek: wd,
           },
         });
-        // Clear per-date assignment overrides on/after this date so the rule wins.
-        await tx.choreOccurrenceOverride.updateMany({
+        // Clear per-date assignment overrides on/after this date on THIS weekday
+        // so the new weekly default wins for them.
+        const future = await tx.choreOccurrenceOverride.findMany({
           where: {
             choreTemplateId: template.id,
             occurrenceDate: { gte: localDateToUtcMidnight(date) },
             hasAssignment: true,
           },
-          data: { hasAssignment: false, assignedMemberId: null },
+          select: { id: true, occurrenceDate: true },
         });
+        const ids = future
+          .filter((o) => isoWeekday(utcMidnightToLocalDate(o.occurrenceDate)) === wd)
+          .map((o) => o.id);
+        if (ids.length) {
+          await tx.choreOccurrenceOverride.updateMany({
+            where: { id: { in: ids } },
+            data: { hasAssignment: false, assignedMemberId: null },
+          });
+        }
         break;
       }
 
@@ -120,6 +138,7 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
             recurrenceRuleId: rule.id,
             familyMemberId: input.memberId,
             effectiveFrom: rule.startDate,
+            dayOfWeek: null,
           },
         });
         await tx.choreOccurrenceOverride.updateMany({
@@ -134,62 +153,124 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
   });
 }
 
-// ---- Reset -----------------------------------------------------------------
+// ---- Delete ----------------------------------------------------------------
 
 /**
- * Reset an occurrence back to its recurring default: remove the dated
- * completion (status -> Pending) and the dated override (assignee/name/time/
- * cancellation -> recurrence default). Meal details are left intact.
+ * Delete a scheduled occurrence.
  *
- * scope 'occurrence' (default) touches only this date. scope 'this-and-future'
- * also clears every dated completion/override from this date forward AND drops
- * any forward assignment rules, reopening the one in effect just before this
- * date, so all following weeks fall back to the base series default.
+ * scope 'occurrence' (default) hides just this date via a cancelled override
+ * and drops its completion — works for one-off and recurring chores alike.
+ *
+ * scope 'this-and-future' removes this weekday from the recurring series from
+ * this date forward: if the series only ever fired on this weekday it simply
+ * ends the day before; otherwise the rule is capped and a fresh weekly rule is
+ * started for the remaining weekdays (carrying open default assignments over).
+ * Dated overrides/completions for this weekday on/after this date are cleared.
  */
-export async function resetOccurrence(
+export async function deleteOccurrence(
   occurrenceKey: string,
-  input: ResetInput = { scope: 'occurrence' },
+  input: DeleteInput = { scope: 'occurrence' },
 ) {
   const { template, date, rule } = await loadOccurrenceTemplate(occurrenceKey);
   const occurrenceDate = localDateToUtcMidnight(date);
+  const prevDate = localDateToUtcMidnight(addLocalDays(date, -1));
+  const wd = isoWeekday(date);
 
-  if (input.scope === 'this-and-future') {
+  if (input.scope === 'this-and-future' && rule) {
     return prisma.$transaction(async (tx) => {
-      await tx.choreCompletion.deleteMany({
-        where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
+      const days = effectiveWeekdays(ruleToInput(rule));
+      const remaining = days.filter((d) => d !== wd);
+
+      // End the current rule the day before this occurrence.
+      await tx.recurrenceRule.update({
+        where: { id: rule.id },
+        data: { endDate: prevDate },
       });
-      await tx.choreOccurrenceOverride.deleteMany({
-        where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
-      });
-      if (rule) {
-        // Drop assignment rules that start on/after this date, then reopen the
-        // one that was in effect just before it so the base default resumes.
-        await tx.assignmentRule.deleteMany({
-          where: { recurrenceRuleId: rule.id, effectiveFrom: { gte: occurrenceDate } },
+
+      if (remaining.length > 0) {
+        // Multi-day series: keep the other weekdays going with a new rule.
+        const newRule = await tx.recurrenceRule.create({
+          data: {
+            choreTemplateId: template.id,
+            frequency: 'CUSTOM_WEEKLY',
+            interval: 1,
+            daysOfWeek: remaining.sort((a, b) => a - b),
+            startDate: occurrenceDate,
+            endDate: rule.endDate,
+            time: rule.time,
+            timezone: rule.timezone,
+          },
         });
-        const prior = await tx.assignmentRule.findFirst({
-          where: { recurrenceRuleId: rule.id, effectiveFrom: { lt: occurrenceDate } },
-          orderBy: { effectiveFrom: 'desc' },
+        // Carry still-open default assignments (except this weekday's) forward.
+        const open = await tx.assignmentRule.findMany({
+          where: { recurrenceRuleId: rule.id, effectiveUntil: null },
         });
-        if (prior && prior.effectiveUntil) {
+        for (const a of open) {
           await tx.assignmentRule.update({
-            where: { id: prior.id },
-            data: { effectiveUntil: null },
+            where: { id: a.id },
+            data: { effectiveUntil: prevDate },
+          });
+          if (a.dayOfWeek === wd) continue;
+          await tx.assignmentRule.create({
+            data: {
+              recurrenceRuleId: newRule.id,
+              familyMemberId: a.familyMemberId,
+              effectiveFrom: occurrenceDate,
+              dayOfWeek: a.dayOfWeek,
+            },
           });
         }
       }
+
+      // Drop this-weekday overrides/completions on or after this date so no
+      // stale row re-adds or marks the now-deleted slot.
+      const [futOv, futCo] = await Promise.all([
+        tx.choreOccurrenceOverride.findMany({
+          where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
+          select: { id: true, occurrenceDate: true },
+        }),
+        tx.choreCompletion.findMany({
+          where: { choreTemplateId: template.id, occurrenceDate: { gte: occurrenceDate } },
+          select: { id: true, occurrenceDate: true },
+        }),
+      ]);
+      const onWd = (rows: { id: string; occurrenceDate: Date }[]) =>
+        rows
+          .filter((o) => isoWeekday(utcMidnightToLocalDate(o.occurrenceDate)) === wd)
+          .map((o) => o.id);
+      const ovIds = onWd(futOv);
+      const coIds = onWd(futCo);
+      if (ovIds.length)
+        await tx.choreOccurrenceOverride.deleteMany({ where: { id: { in: ovIds } } });
+      if (coIds.length)
+        await tx.choreCompletion.deleteMany({ where: { id: { in: coIds } } });
+
       return { ok: true, occurrenceKey, scope: input.scope };
     });
   }
 
-  await prisma.$transaction([
-    prisma.choreCompletion.deleteMany({
+  // Single occurrence (or a one-off chore): hide it with a cancelled override
+  // and drop any completion so it leaves the week and the day counts.
+  await prisma.$transaction(async (tx) => {
+    await tx.choreOccurrenceOverride.upsert({
+      where: {
+        choreTemplateId_occurrenceDate: {
+          choreTemplateId: template.id,
+          occurrenceDate,
+        },
+      },
+      create: {
+        choreTemplateId: template.id,
+        occurrenceDate,
+        recurrenceRuleId: rule?.id ?? null,
+        isCancelled: true,
+      },
+      update: { isCancelled: true },
+    });
+    await tx.choreCompletion.deleteMany({
       where: { choreTemplateId: template.id, occurrenceDate },
-    }),
-    prisma.choreOccurrenceOverride.deleteMany({
-      where: { choreTemplateId: template.id, occurrenceDate },
-    }),
-  ]);
+    });
+  });
   return { ok: true, occurrenceKey, scope: input.scope };
 }
 

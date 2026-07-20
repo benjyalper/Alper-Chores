@@ -4,6 +4,7 @@ import {
   parseOccurrenceKey,
   resolveDefaultAssignee,
   resolveTemplateOccurrences,
+  effectiveWeekdays,
   ruleFiresOn,
   type ResolveContext,
   type RuleInput,
@@ -91,8 +92,8 @@ describe('occurrence key', () => {
 describe('resolveDefaultAssignee', () => {
   it('latest effectiveFrom covering the date wins', () => {
     const rules = [
-      { familyMemberId: 'm1', effectiveFrom: '2024-01-01', effectiveUntil: null },
-      { familyMemberId: 'm2', effectiveFrom: '2026-07-08', effectiveUntil: null },
+      { familyMemberId: 'm1', effectiveFrom: '2024-01-01', effectiveUntil: null, dayOfWeek: null },
+      { familyMemberId: 'm2', effectiveFrom: '2026-07-08', effectiveUntil: null, dayOfWeek: null },
     ];
     expect(resolveDefaultAssignee(rules, '2026-07-07')).toBe('m1');
     expect(resolveDefaultAssignee(rules, '2026-07-09')).toBe('m2');
@@ -100,9 +101,37 @@ describe('resolveDefaultAssignee', () => {
 
   it('ignores rules outside their window', () => {
     const rules = [
-      { familyMemberId: 'm1', effectiveFrom: '2026-07-06', effectiveUntil: '2026-07-08' },
+      { familyMemberId: 'm1', effectiveFrom: '2026-07-06', effectiveUntil: '2026-07-08', dayOfWeek: null },
     ];
     expect(resolveDefaultAssignee(rules, '2026-07-09')).toBeNull();
+  });
+
+  it('a weekday-scoped rule only applies on its weekday', () => {
+    // 2026-07-20 is a Monday (ISO weekday 1); 2026-07-21 a Tuesday.
+    const rules = [
+      { familyMemberId: 'mAll', effectiveFrom: '2024-01-01', effectiveUntil: null, dayOfWeek: null },
+      { familyMemberId: 'mMon', effectiveFrom: '2026-07-20', effectiveUntil: null, dayOfWeek: 1 },
+    ];
+    expect(resolveDefaultAssignee(rules, '2026-07-20')).toBe('mMon'); // Monday
+    expect(resolveDefaultAssignee(rules, '2026-07-21')).toBe('mAll'); // Tuesday
+    expect(resolveDefaultAssignee(rules, '2026-07-27')).toBe('mMon'); // next Monday
+  });
+});
+
+describe('effectiveWeekdays', () => {
+  const base: RuleInput = {
+    id: 'r', frequency: 'DAILY', interval: 1, daysOfWeek: [],
+    startDate: '2026-07-20', endDate: null, time: null, isActive: true,
+  };
+  it('DAILY fires on all seven weekdays', () => {
+    expect(effectiveWeekdays(base)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+  it('WEEKLY uses its daysOfWeek', () => {
+    expect(effectiveWeekdays({ ...base, frequency: 'WEEKLY', daysOfWeek: [1, 4] })).toEqual([1, 4]);
+  });
+  it('WEEKLY with no days derives from the start weekday', () => {
+    // 2026-07-20 is Monday => [1]
+    expect(effectiveWeekdays({ ...base, frequency: 'WEEKLY' })).toEqual([1]);
   });
 });
 
@@ -197,8 +226,8 @@ describe('resolveTemplateOccurrences', () => {
     const out = resolveTemplateOccurrences(
       ctx(dailyTemplate, {
         assignmentRules: [
-          { familyMemberId: 'mA', effectiveFrom: '2024-01-01', effectiveUntil: null },
-          { familyMemberId: 'mB', effectiveFrom: '2026-07-09', effectiveUntil: null },
+          { familyMemberId: 'mA', effectiveFrom: '2024-01-01', effectiveUntil: null, dayOfWeek: null },
+          { familyMemberId: 'mB', effectiveFrom: '2026-07-09', effectiveUntil: null, dayOfWeek: null },
         ],
       }),
       week,

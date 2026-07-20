@@ -16,7 +16,7 @@ import type {
   WeeklyScheduleDTO,
   AssignmentScope,
   CompletionStatus,
-  ResetScope,
+  DeleteScope,
 } from '@shared/types';
 
 // ---- Config ----------------------------------------------------------------
@@ -86,11 +86,11 @@ export function useSetStatus() {
   });
 }
 
-export function useResetOccurrence() {
+export function useDeleteOccurrence() {
   const invalidate = useInvalidateSchedule();
   return useMutation({
-    mutationFn: (v: { occurrenceKey: string; scope: ResetScope }) =>
-      api.post(`/occurrences/${encodeURIComponent(v.occurrenceKey)}/reset`, {
+    mutationFn: (v: { occurrenceKey: string; scope: DeleteScope }) =>
+      api.post(`/occurrences/${encodeURIComponent(v.occurrenceKey)}/delete`, {
         scope: v.scope,
       }),
     onSuccess: () => invalidate(),

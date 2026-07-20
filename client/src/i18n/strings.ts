@@ -54,7 +54,6 @@ const en: Record<string, string> = {
 
   indicator_repeats: 'Repeats',
   indicator_notes: 'Has notes',
-  reset_chore: 'Reset to default',
 
   meal_title: 'Meal details',
   meal_plan_type: 'Meal plan',
@@ -102,9 +101,10 @@ const en: Record<string, string> = {
   scope_this_only: 'This occurrence',
   scope_recurring: 'Recurring (every week)',
 
-  reset_scope_question: 'Reset which occurrences?',
-  reset_one: 'This occurrence only',
-  reset_future: 'This and following weeks',
+  del: 'Delete',
+  delete_scope_question: 'Delete which occurrences?',
+  delete_one: 'This occurrence only',
+  delete_future: 'This and following weeks',
 
   empty_day: 'This day is all organized.',
   empty_no_assignee: 'No one is assigned yet.',
@@ -205,7 +205,6 @@ const he: Record<string, string> = {
 
   indicator_repeats: 'חוזר',
   indicator_notes: 'יש הערות',
-  reset_chore: 'איפוס לברירת מחדל',
 
   meal_title: 'פרטי ארוחה',
   meal_plan_type: 'סוג ארוחה',
@@ -253,9 +252,10 @@ const he: Record<string, string> = {
   scope_this_only: 'מופע זה',
   scope_recurring: 'אירוע חוזר',
 
-  reset_scope_question: 'לאפס אילו מופעים?',
-  reset_one: 'מופע זה בלבד',
-  reset_future: 'מופע זה והשבועות הבאים',
+  del: 'מחק',
+  delete_scope_question: 'למחוק אילו מופעים?',
+  delete_one: 'מופע זה בלבד',
+  delete_future: 'מופע זה והשבועות הבאים',
 
   empty_day: 'היום הזה מסודר לגמרי.',
   empty_no_assignee: 'עדיין לא שויך אף אחד.',

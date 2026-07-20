@@ -489,7 +489,7 @@ button {
   display: inline-flex;
   gap: 3px;
 }
-.reset-btn {
+.delete-btn {
   cursor: pointer;
   border: none;
   font-size: 0.95rem;
@@ -500,10 +500,10 @@ button {
   height: 26px;
   justify-content: center;
 }
-.reset-btn:hover:not(:disabled) {
+.delete-btn:hover:not(:disabled) {
   filter: brightness(0.92);
 }
-.reset-btn:disabled {
+.delete-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

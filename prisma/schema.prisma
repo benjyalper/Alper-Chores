@@ -173,6 +173,7 @@ model AssignmentRule {
   familyMemberId   String?
   effectiveFrom    DateTime  @db.Date
   effectiveUntil   DateTime? @db.Date
+  dayOfWeek        Int? // 1=Mon..7=Sun (ISO). null => applies to every firing weekday
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

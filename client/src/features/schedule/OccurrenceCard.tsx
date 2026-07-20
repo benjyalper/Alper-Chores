@@ -3,7 +3,7 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
-  ResetScope,
+  DeleteScope,
 } from '@shared/types';
 import { MemberSelect } from '../../components/MemberSelect';
 import { StatusControl } from '../../components/StatusControl';
@@ -19,7 +19,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onReset: (occ: OccurrenceDTO, scope: ResetScope) => void;
+  onDelete: (occ: OccurrenceDTO, scope: DeleteScope) => void;
   busy?: boolean;
 }
 
@@ -37,7 +37,7 @@ export function OccurrenceCard({
   onAssign,
   onStatus,
   onOpenMeal,
-  onReset,
+  onDelete,
   busy,
 }: Props) {
   const { t, code } = useI18n();
@@ -45,8 +45,8 @@ export function OccurrenceCard({
     undefined,
   );
   const [scopeOpen, setScopeOpen] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
-  const [resetScope, setResetScope] = useState<ResetScope>('occurrence');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteScope, setDeleteScope] = useState<DeleteScope>('occurrence');
 
   const handleChange = (memberId: string | null) => {
     setLastMemberId(memberId);
@@ -64,20 +64,20 @@ export function OccurrenceCard({
     setPendingMember(undefined);
   };
 
-  const handleResetClick = () => {
-    // Recurring chores ask whether to revert just this slot or all following
-    // weeks too; one-off chores have nothing beyond this occurrence to reset.
+  const handleDeleteClick = () => {
+    // Recurring chores ask whether to delete just this slot or this weekday on
+    // every following week too; one-off chores just delete this occurrence.
     if (occ.isRecurring) {
-      setResetScope('occurrence');
-      setResetOpen(true);
+      setDeleteScope('occurrence');
+      setDeleteOpen(true);
     } else {
-      onReset(occ, 'occurrence');
+      onDelete(occ, 'occurrence');
     }
   };
 
-  const confirmReset = () => {
-    onReset(occ, resetScope);
-    setResetOpen(false);
+  const confirmDelete = () => {
+    onDelete(occ, deleteScope);
+    setDeleteOpen(false);
   };
 
   const statusClass =
@@ -121,13 +121,13 @@ export function OccurrenceCard({
           </span>
           <button
             type="button"
-            className="chip chip--recurring reset-btn"
-            title={t('reset_chore')}
-            aria-label={t('reset_chore')}
-            onClick={handleResetClick}
+            className="chip chip--recurring delete-btn"
+            title={t('del')}
+            aria-label={t('del')}
+            onClick={handleDeleteClick}
             disabled={busy}
           >
-            <span aria-hidden="true">↺</span>
+            <span aria-hidden="true">🗑</span>
           </button>
         </div>
       </div>
@@ -173,45 +173,45 @@ export function OccurrenceCard({
         onConfirm={confirmScope}
       />
 
-      {resetOpen && (
+      {deleteOpen && (
         <Dialog
-          open={resetOpen}
-          onClose={() => setResetOpen(false)}
-          title={t('reset_scope_question')}
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          title={t('delete_scope_question')}
           footer={
             <>
               <button
                 type="button"
                 className="btn btn--ghost"
-                onClick={() => setResetOpen(false)}
+                onClick={() => setDeleteOpen(false)}
               >
                 {t('cancel')}
               </button>
-              <button type="button" className="btn btn--primary" onClick={confirmReset}>
-                {t('reset_chore')}
+              <button type="button" className="btn btn--danger" onClick={confirmDelete}>
+                {t('del')}
               </button>
             </>
           }
         >
           <fieldset className="scope-options">
-            <legend className="sr-only">{t('reset_scope_question')}</legend>
+            <legend className="sr-only">{t('delete_scope_question')}</legend>
             <label className="scope-option">
               <input
                 type="radio"
-                name={`reset-${occ.occurrenceKey}`}
-                checked={resetScope === 'occurrence'}
-                onChange={() => setResetScope('occurrence')}
+                name={`delete-${occ.occurrenceKey}`}
+                checked={deleteScope === 'occurrence'}
+                onChange={() => setDeleteScope('occurrence')}
               />
-              <span>{t('reset_one')}</span>
+              <span>{t('delete_one')}</span>
             </label>
             <label className="scope-option">
               <input
                 type="radio"
-                name={`reset-${occ.occurrenceKey}`}
-                checked={resetScope === 'this-and-future'}
-                onChange={() => setResetScope('this-and-future')}
+                name={`delete-${occ.occurrenceKey}`}
+                checked={deleteScope === 'this-and-future'}
+                onChange={() => setDeleteScope('this-and-future')}
               />
-              <span>{t('reset_future')}</span>
+              <span>{t('delete_future')}</span>
             </label>
           </fieldset>
         </Dialog>

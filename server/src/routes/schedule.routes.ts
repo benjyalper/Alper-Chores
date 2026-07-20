@@ -5,6 +5,7 @@ import {
   assignmentSchema,
   mealSchema,
   occurrenceEditSchema,
+  resetSchema,
   statusSchema,
   weekQuerySchema,
 } from '../validation/schemas.js';
@@ -47,11 +48,13 @@ scheduleRouter.patch(
   }),
 );
 
-// Refresh an occurrence back to its recurring default (clears completion + override).
+// Refresh an occurrence back to default. Body { scope: 'occurrence' | 'series' }
+// — 'occurrence' clears this date; 'series' resets the whole recurring event.
 scheduleRouter.post(
   '/occurrences/:occurrenceKey/reset',
   asyncHandler(async (req, res) => {
-    res.json(await occ.resetOccurrence(req.params.occurrenceKey));
+    const input = parseBody(resetSchema, req.body ?? {});
+    res.json(await occ.resetOccurrence(req.params.occurrenceKey, input));
   }),
 );
 

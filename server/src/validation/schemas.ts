@@ -38,6 +38,7 @@ export const assignmentScopeEnum = z.enum([
   'entire-series',
 ]);
 export const editScopeEnum = z.enum(['occurrence', 'this-and-future', 'entire-series']);
+export const refreshScopeEnum = z.enum(['occurrence', 'series']);
 
 // ---- Members ---------------------------------------------------------------
 
@@ -136,6 +137,10 @@ export const statusSchema = z.object({
   note: z.string().trim().max(300).nullish(),
 });
 
+export const resetSchema = z.object({
+  scope: refreshScopeEnum.default('occurrence'),
+});
+
 export const occurrenceEditSchema = z.object({
   scope: editScopeEnum.default('occurrence'),
   name: z.string().trim().min(1).max(80).nullish(),
@@ -161,3 +166,4 @@ export type AssignmentInput = z.infer<typeof assignmentSchema>;
 export type StatusInput = z.infer<typeof statusSchema>;
 export type MealInput = z.infer<typeof mealSchema>;
 export type OccurrenceEditInput = z.infer<typeof occurrenceEditSchema>;
+export type ResetInput = z.infer<typeof resetSchema>;

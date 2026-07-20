@@ -157,10 +157,22 @@ app.put('/api/occurrences/:key/meal', (req, res) => {
   res.json({ ok: true });
 });
 app.post('/api/occurrences/:key/reset', (req, res) => {
-  // Refresh this occurrence back to its recurring default (non-destructive).
-  overrides.delete(req.params.key);
-  completions.delete(req.params.key);
-  res.json({ ok: true });
+  // Refresh back to default (non-destructive). 'series' resets the whole event.
+  const p = parseOccurrenceKey(req.params.key);
+  if (!p) return res.status(400).json({ error: { message: 'bad key' } });
+  const scope = req.body?.scope ?? 'occurrence';
+  if (scope === 'series') {
+    for (const map of [overrides, completions]) {
+      for (const k of [...map.keys()]) {
+        const kp = parseOccurrenceKey(k);
+        if (kp && kp.templateId === p.templateId) map.delete(k);
+      }
+    }
+  } else {
+    overrides.delete(req.params.key);
+    completions.delete(req.params.key);
+  }
+  res.json({ ok: true, scope });
 });
 app.post('/api/chores', (req, res) => res.status(201).json({ id: 'new', ...req.body }));
 app.patch('/api/members/:id', (req, res) => res.json({ ...members.find((m) => m.id === req.params.id), ...req.body }));

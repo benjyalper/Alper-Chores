@@ -3,10 +3,12 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
+  RefreshScope,
 } from '@shared/types';
 import { MemberSelect } from '../../components/MemberSelect';
 import { StatusControl } from '../../components/StatusControl';
 import { ScopeDialog } from '../../components/ScopeDialog';
+import { Dialog } from '../../components/Dialog';
 import { useI18n } from '../../i18n/I18nContext';
 import { contentName } from '../../i18n/content';
 import { setLastMemberId } from '../../utils/members';
@@ -17,7 +19,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onRefresh: (occ: OccurrenceDTO) => void;
+  onRefresh: (occ: OccurrenceDTO, scope: RefreshScope) => void;
   busy?: boolean;
 }
 
@@ -43,6 +45,24 @@ export function OccurrenceCard({
     undefined,
   );
   const [scopeOpen, setScopeOpen] = useState(false);
+  const [refreshOpen, setRefreshOpen] = useState(false);
+  const [refreshScope, setRefreshScope] = useState<RefreshScope>('occurrence');
+
+  const handleRefreshClick = () => {
+    // Recurring events ask whether to refresh just this day or the whole event
+    // (which also clears a recurring assignment); one-off chores just refresh.
+    if (occ.isRecurring) {
+      setRefreshScope('occurrence');
+      setRefreshOpen(true);
+    } else {
+      onRefresh(occ, 'occurrence');
+    }
+  };
+
+  const confirmRefresh = () => {
+    onRefresh(occ, refreshScope);
+    setRefreshOpen(false);
+  };
 
   const handleChange = (memberId: string | null) => {
     setLastMemberId(memberId);
@@ -104,7 +124,7 @@ export function OccurrenceCard({
             className="chip chip--recurring refresh-btn"
             title={t('refresh_chore')}
             aria-label={t('refresh_chore')}
-            onClick={() => onRefresh(occ)}
+            onClick={handleRefreshClick}
             disabled={busy}
           >
             <span aria-hidden="true">↺</span>
@@ -152,6 +172,50 @@ export function OccurrenceCard({
         }}
         onConfirm={confirmScope}
       />
+
+      {refreshOpen && (
+        <Dialog
+          open={refreshOpen}
+          onClose={() => setRefreshOpen(false)}
+          title={t('refresh_scope_question')}
+          footer={
+            <>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => setRefreshOpen(false)}
+              >
+                {t('cancel')}
+              </button>
+              <button type="button" className="btn btn--primary" onClick={confirmRefresh}>
+                {t('refresh_action')}
+              </button>
+            </>
+          }
+        >
+          <fieldset className="scope-options">
+            <legend className="sr-only">{t('refresh_scope_question')}</legend>
+            <label className="scope-option">
+              <input
+                type="radio"
+                name={`refresh-${occ.occurrenceKey}`}
+                checked={refreshScope === 'occurrence'}
+                onChange={() => setRefreshScope('occurrence')}
+              />
+              <span>{t('refresh_this')}</span>
+            </label>
+            <label className="scope-option">
+              <input
+                type="radio"
+                name={`refresh-${occ.occurrenceKey}`}
+                checked={refreshScope === 'series'}
+                onChange={() => setRefreshScope('series')}
+              />
+              <span>{t('refresh_all')}</span>
+            </label>
+          </fieldset>
+        </Dialog>
+      )}
     </div>
   );
 }

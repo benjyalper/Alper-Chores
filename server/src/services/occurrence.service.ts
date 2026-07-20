@@ -17,6 +17,7 @@ import type {
   AssignmentInput,
   MealInput,
   OccurrenceEditInput,
+  ResetInput,
   StatusInput,
 } from '../validation/schemas.js';
 
@@ -151,14 +152,45 @@ export async function setAssignment(occurrenceKey: string, input: AssignmentInpu
 // ---- Refresh (reset to default) --------------------------------------------
 
 /**
- * Refresh a single occurrence back to its recurring default: drop the dated
- * completion (status -> Pending) and the dated override (assignee/name/time/
- * cancellation -> recurrence default). Non-destructive — the chore stays on the
- * schedule; nothing about the series or other dates changes. Meals are left
- * intact.
+ * Refresh a chore back to its default. Non-destructive: the chore/series always
+ * stays on the schedule.
+ *
+ * scope 'occurrence' (default): drop just this date's completion + override, so
+ * this one day reverts to the recurrence default.
+ *
+ * scope 'series': reset the ENTIRE recurring event in one go — clear every
+ * dated completion + override AND remove all assignment rules (so a recurring
+ * assignment set on this event is wiped and it goes back to unassigned/pending
+ * everywhere). The recurrence itself is left intact.
  */
-export async function resetOccurrence(occurrenceKey: string) {
+export async function resetOccurrence(
+  occurrenceKey: string,
+  input: ResetInput = { scope: 'occurrence' },
+) {
   const { template, date } = await loadOccurrenceTemplate(occurrenceKey);
+
+  if (input.scope === 'series') {
+    return prisma.$transaction(async (tx) => {
+      const rules = await tx.recurrenceRule.findMany({
+        where: { choreTemplateId: template.id },
+        select: { id: true },
+      });
+      const ruleIds = rules.map((r) => r.id);
+      if (ruleIds.length) {
+        await tx.assignmentRule.deleteMany({
+          where: { recurrenceRuleId: { in: ruleIds } },
+        });
+      }
+      await tx.choreOccurrenceOverride.deleteMany({
+        where: { choreTemplateId: template.id },
+      });
+      await tx.choreCompletion.deleteMany({
+        where: { choreTemplateId: template.id },
+      });
+      return { ok: true, occurrenceKey, scope: input.scope };
+    });
+  }
+
   const occurrenceDate = localDateToUtcMidnight(date);
   await prisma.$transaction([
     prisma.choreCompletion.deleteMany({
@@ -168,7 +200,7 @@ export async function resetOccurrence(occurrenceKey: string) {
       where: { choreTemplateId: template.id, occurrenceDate },
     }),
   ]);
-  return { ok: true, occurrenceKey };
+  return { ok: true, occurrenceKey, scope: input.scope };
 }
 
 // ---- Completion status -----------------------------------------------------

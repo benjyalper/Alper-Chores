@@ -103,6 +103,10 @@ const en: Record<string, string> = {
 
   refresh_chore: 'Refresh (reset to default)',
   refreshed: 'Refreshed',
+  refresh_action: 'Refresh',
+  refresh_scope_question: 'Refresh what?',
+  refresh_this: 'Just this occurrence',
+  refresh_all: 'The whole recurring event (clears its assignment)',
 
   empty_day: 'This day is all organized.',
   empty_no_assignee: 'No one is assigned yet.',
@@ -252,6 +256,10 @@ const he: Record<string, string> = {
 
   refresh_chore: 'רענון (איפוס לברירת מחדל)',
   refreshed: 'רוענן',
+  refresh_action: 'רענון',
+  refresh_scope_question: 'מה לרענן?',
+  refresh_this: 'מופע זה בלבד',
+  refresh_all: 'את כל האירוע החוזר (מנקה את השיוך)',
 
   empty_day: 'היום הזה מסודר לגמרי.',
   empty_no_assignee: 'עדיין לא שויך אף אחד.',

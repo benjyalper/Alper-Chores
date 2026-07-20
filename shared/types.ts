@@ -22,6 +22,9 @@ export type AssignmentScope =
 /** Scope for editing an occurrence that belongs to a recurring series. */
 export type EditScope = 'occurrence' | 'this-and-future' | 'entire-series';
 
+/** Scope for the Refresh (reset-to-default) control. */
+export type RefreshScope = 'occurrence' | 'series';
+
 export interface FamilyMemberDTO {
   id: string;
   name: string;

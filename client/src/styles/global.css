@@ -489,7 +489,7 @@ button {
   display: inline-flex;
   gap: 3px;
 }
-.delete-btn {
+.refresh-btn {
   cursor: pointer;
   border: none;
   font-size: 0.95rem;
@@ -500,10 +500,10 @@ button {
   height: 26px;
   justify-content: center;
 }
-.delete-btn:hover:not(:disabled) {
+.refresh-btn:hover:not(:disabled) {
   filter: brightness(0.92);
 }
-.delete-btn:disabled {
+.refresh-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -1112,14 +1112,28 @@ button {
   .topbar__nav {
     display: none;
   }
+  /* App-shell layout on phones: the shell fills the (dynamic) viewport and only
+     the main area scrolls. The top bar and bottom nav are normal flex children,
+     NOT position:fixed — so iOS Safari can't slide them as its toolbar shows
+     and hides during scroll. */
+  .app-shell {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .topbar {
+    position: static;
+  }
   .app-main {
-    padding: 14px 14px 84px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 14px 20px;
   }
   .bottom-nav {
     display: flex;
-    position: fixed;
-    bottom: 0;
-    inset-inline: 0;
+    flex: 0 0 auto;
     background: var(--surface);
     border-top: 1px solid var(--border);
     z-index: 30;

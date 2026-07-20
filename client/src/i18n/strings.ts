@@ -101,10 +101,8 @@ const en: Record<string, string> = {
   scope_this_only: 'This occurrence',
   scope_recurring: 'Recurring (every week)',
 
-  del: 'Delete',
-  delete_scope_question: 'Delete which occurrences?',
-  delete_one: 'This occurrence only',
-  delete_future: 'This and following weeks',
+  refresh_chore: 'Refresh (reset to default)',
+  refreshed: 'Refreshed',
 
   empty_day: 'This day is all organized.',
   empty_no_assignee: 'No one is assigned yet.',
@@ -252,10 +250,8 @@ const he: Record<string, string> = {
   scope_this_only: 'מופע זה',
   scope_recurring: 'אירוע חוזר',
 
-  del: 'מחק',
-  delete_scope_question: 'למחוק אילו מופעים?',
-  delete_one: 'מופע זה בלבד',
-  delete_future: 'מופע זה והשבועות הבאים',
+  refresh_chore: 'רענון (איפוס לברירת מחדל)',
+  refreshed: 'רוענן',
 
   empty_day: 'היום הזה מסודר לגמרי.',
   empty_no_assignee: 'עדיין לא שויך אף אחד.',

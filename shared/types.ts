@@ -22,9 +22,6 @@ export type AssignmentScope =
 /** Scope for editing an occurrence that belongs to a recurring series. */
 export type EditScope = 'occurrence' | 'this-and-future' | 'entire-series';
 
-/** Scope for deleting a scheduled occurrence. */
-export type DeleteScope = 'occurrence' | 'this-and-future';
-
 export interface FamilyMemberDTO {
   id: string;
   name: string;

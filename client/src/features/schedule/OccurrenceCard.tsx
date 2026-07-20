@@ -3,12 +3,10 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
-  DeleteScope,
 } from '@shared/types';
 import { MemberSelect } from '../../components/MemberSelect';
 import { StatusControl } from '../../components/StatusControl';
 import { ScopeDialog } from '../../components/ScopeDialog';
-import { Dialog } from '../../components/Dialog';
 import { useI18n } from '../../i18n/I18nContext';
 import { contentName } from '../../i18n/content';
 import { setLastMemberId } from '../../utils/members';
@@ -19,7 +17,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onDelete: (occ: OccurrenceDTO, scope: DeleteScope) => void;
+  onRefresh: (occ: OccurrenceDTO) => void;
   busy?: boolean;
 }
 
@@ -37,7 +35,7 @@ export function OccurrenceCard({
   onAssign,
   onStatus,
   onOpenMeal,
-  onDelete,
+  onRefresh,
   busy,
 }: Props) {
   const { t, code } = useI18n();
@@ -45,8 +43,6 @@ export function OccurrenceCard({
     undefined,
   );
   const [scopeOpen, setScopeOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteScope, setDeleteScope] = useState<DeleteScope>('occurrence');
 
   const handleChange = (memberId: string | null) => {
     setLastMemberId(memberId);
@@ -62,22 +58,6 @@ export function OccurrenceCard({
     onAssign(occ, pendingMember ?? null, scope);
     setScopeOpen(false);
     setPendingMember(undefined);
-  };
-
-  const handleDeleteClick = () => {
-    // Recurring chores ask whether to delete just this slot or this weekday on
-    // every following week too; one-off chores just delete this occurrence.
-    if (occ.isRecurring) {
-      setDeleteScope('occurrence');
-      setDeleteOpen(true);
-    } else {
-      onDelete(occ, 'occurrence');
-    }
-  };
-
-  const confirmDelete = () => {
-    onDelete(occ, deleteScope);
-    setDeleteOpen(false);
   };
 
   const statusClass =
@@ -121,13 +101,13 @@ export function OccurrenceCard({
           </span>
           <button
             type="button"
-            className="chip chip--recurring delete-btn"
-            title={t('del')}
-            aria-label={t('del')}
-            onClick={handleDeleteClick}
+            className="chip chip--recurring refresh-btn"
+            title={t('refresh_chore')}
+            aria-label={t('refresh_chore')}
+            onClick={() => onRefresh(occ)}
             disabled={busy}
           >
-            <span aria-hidden="true">🗑</span>
+            <span aria-hidden="true">↺</span>
           </button>
         </div>
       </div>
@@ -172,50 +152,6 @@ export function OccurrenceCard({
         }}
         onConfirm={confirmScope}
       />
-
-      {deleteOpen && (
-        <Dialog
-          open={deleteOpen}
-          onClose={() => setDeleteOpen(false)}
-          title={t('delete_scope_question')}
-          footer={
-            <>
-              <button
-                type="button"
-                className="btn btn--ghost"
-                onClick={() => setDeleteOpen(false)}
-              >
-                {t('cancel')}
-              </button>
-              <button type="button" className="btn btn--danger" onClick={confirmDelete}>
-                {t('del')}
-              </button>
-            </>
-          }
-        >
-          <fieldset className="scope-options">
-            <legend className="sr-only">{t('delete_scope_question')}</legend>
-            <label className="scope-option">
-              <input
-                type="radio"
-                name={`delete-${occ.occurrenceKey}`}
-                checked={deleteScope === 'occurrence'}
-                onChange={() => setDeleteScope('occurrence')}
-              />
-              <span>{t('delete_one')}</span>
-            </label>
-            <label className="scope-option">
-              <input
-                type="radio"
-                name={`delete-${occ.occurrenceKey}`}
-                checked={deleteScope === 'this-and-future'}
-                onChange={() => setDeleteScope('this-and-future')}
-              />
-              <span>{t('delete_future')}</span>
-            </label>
-          </fieldset>
-        </Dialog>
-      )}
     </div>
   );
 }

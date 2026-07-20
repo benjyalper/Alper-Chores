@@ -3,7 +3,6 @@ import { asyncHandler } from '../middleware/error-handler.js';
 import { parseBody, parseQuery } from '../middleware/validate.js';
 import {
   assignmentSchema,
-  deleteSchema,
   mealSchema,
   occurrenceEditSchema,
   statusSchema,
@@ -48,13 +47,11 @@ scheduleRouter.patch(
   }),
 );
 
-// Delete a scheduled occurrence.
-// Body { scope: 'occurrence' | 'this-and-future' } — default deletes this date only.
+// Refresh an occurrence back to its recurring default (clears completion + override).
 scheduleRouter.post(
-  '/occurrences/:occurrenceKey/delete',
+  '/occurrences/:occurrenceKey/reset',
   asyncHandler(async (req, res) => {
-    const input = parseBody(deleteSchema, req.body ?? {});
-    res.json(await occ.deleteOccurrence(req.params.occurrenceKey, input));
+    res.json(await occ.resetOccurrence(req.params.occurrenceKey));
   }),
 );
 

@@ -134,23 +134,6 @@ export function ruleFiresOn(rule: RuleInput, localDate: string): boolean {
   }
 }
 
-/** ISO weekdays (1..7) a rule can fire on, ignoring interval and date bounds. */
-export function effectiveWeekdays(rule: RuleInput): number[] {
-  switch (rule.frequency) {
-    case 'DAILY':
-      return [1, 2, 3, 4, 5, 6, 7];
-    case 'ONCE':
-      return [isoWeekday(rule.startDate)];
-    case 'WEEKLY':
-    case 'CUSTOM_WEEKLY':
-      return rule.daysOfWeek && rule.daysOfWeek.length > 0
-        ? [...rule.daysOfWeek]
-        : [isoWeekday(rule.startDate)];
-    default:
-      return [];
-  }
-}
-
 /** Resolve the default assignee for a date from the assignment rules. */
 export function resolveDefaultAssignee(
   rules: AssignmentRuleInput[],

@@ -4,7 +4,6 @@ import {
   parseOccurrenceKey,
   resolveDefaultAssignee,
   resolveTemplateOccurrences,
-  effectiveWeekdays,
   ruleFiresOn,
   type ResolveContext,
   type RuleInput,
@@ -115,23 +114,6 @@ describe('resolveDefaultAssignee', () => {
     expect(resolveDefaultAssignee(rules, '2026-07-20')).toBe('mMon'); // Monday
     expect(resolveDefaultAssignee(rules, '2026-07-21')).toBe('mAll'); // Tuesday
     expect(resolveDefaultAssignee(rules, '2026-07-27')).toBe('mMon'); // next Monday
-  });
-});
-
-describe('effectiveWeekdays', () => {
-  const base: RuleInput = {
-    id: 'r', frequency: 'DAILY', interval: 1, daysOfWeek: [],
-    startDate: '2026-07-20', endDate: null, time: null, isActive: true,
-  };
-  it('DAILY fires on all seven weekdays', () => {
-    expect(effectiveWeekdays(base)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-  });
-  it('WEEKLY uses its daysOfWeek', () => {
-    expect(effectiveWeekdays({ ...base, frequency: 'WEEKLY', daysOfWeek: [1, 4] })).toEqual([1, 4]);
-  });
-  it('WEEKLY with no days derives from the start weekday', () => {
-    // 2026-07-20 is Monday => [1]
-    expect(effectiveWeekdays({ ...base, frequency: 'WEEKLY' })).toEqual([1]);
   });
 });
 

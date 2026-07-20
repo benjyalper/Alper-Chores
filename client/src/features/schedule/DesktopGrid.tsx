@@ -3,7 +3,6 @@ import type {
   AssignmentScope,
   FamilyMemberDTO,
   OccurrenceDTO,
-  DeleteScope,
   WeeklyScheduleDTO,
 } from '@shared/types';
 import { OccurrenceCard } from './OccurrenceCard';
@@ -17,7 +16,7 @@ interface Props {
   onAssign: (occ: OccurrenceDTO, memberId: string | null, scope: AssignmentScope) => void;
   onStatus: (occ: OccurrenceDTO, status: OccurrenceDTO['status']) => void;
   onOpenMeal: (occ: OccurrenceDTO) => void;
-  onDelete: (occ: OccurrenceDTO, scope: DeleteScope) => void;
+  onRefresh: (occ: OccurrenceDTO) => void;
 }
 
 export function DesktopGrid({
@@ -26,7 +25,7 @@ export function DesktopGrid({
   onAssign,
   onStatus,
   onOpenMeal,
-  onDelete,
+  onRefresh,
 }: Props) {
   const { t, code } = useI18n();
 
@@ -89,7 +88,7 @@ export function DesktopGrid({
                           onAssign={onAssign}
                           onStatus={onStatus}
                           onOpenMeal={onOpenMeal}
-                          onDelete={onDelete}
+                          onRefresh={onRefresh}
                         />
                       ))
                     )}

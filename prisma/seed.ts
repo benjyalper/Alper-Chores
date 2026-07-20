@@ -138,6 +138,43 @@ async function main() {
     }
   }
 
+  // Repair: an earlier "delete this and following weeks" bug could split a
+  // template into TWO active recurrence rules (capping the first, adding a
+  // second). The app only ever reads the first rule, so the chore silently
+  // vanished for future weeks. The model is one-rule-per-template, so collapse
+  // any template back to a single active rule and clear the endDate the bug set.
+  // Idempotent: templates already having a single rule are untouched.
+  const allTemplates = await prisma.choreTemplate.findMany({
+    where: { householdId: HOUSEHOLD_ID },
+    select: { id: true },
+  });
+  let repaired = 0;
+  for (const tpl of allTemplates) {
+    const rules = await prisma.recurrenceRule.findMany({
+      where: { choreTemplateId: tpl.id, isActive: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (rules.length <= 1) continue;
+    const [keep, ...extra] = rules;
+    // Extra rules cascade-delete their assignment rules; keep the original and
+    // reopen it (endDate null) so it fires on every future week again.
+    await prisma.recurrenceRule.deleteMany({ where: { id: { in: extra.map((r) => r.id) } } });
+    if (keep.endDate) {
+      await prisma.recurrenceRule.update({ where: { id: keep.id }, data: { endDate: null } });
+    }
+    repaired += 1;
+  }
+  if (repaired > 0) console.log(`✔ Repaired ${repaired} split recurrence rule(s)`);
+
+  // The old delete also hid single days via cancelled overrides. There is no
+  // user-facing "cancel occurrence" feature, so any such rows are from that bug
+  // — un-hide them so those days come back.
+  const uncancelled = await prisma.choreOccurrenceOverride.updateMany({
+    where: { isCancelled: true },
+    data: { isCancelled: false },
+  });
+  if (uncancelled.count > 0) console.log(`✔ Un-hid ${uncancelled.count} cancelled day(s)`);
+
   const counts = {
     members: await prisma.familyMember.count(),
     categories: await prisma.choreCategory.count(),

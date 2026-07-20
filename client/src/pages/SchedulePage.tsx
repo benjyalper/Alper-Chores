@@ -2,14 +2,13 @@ import { useState } from 'react';
 import type {
   AssignmentScope,
   OccurrenceDTO,
-  DeleteScope,
 } from '@shared/types';
 import { addLocalDays, startOfWeek, todayLocalDate } from '@shared/dates';
 import {
   useSchedule,
   useSetAssignment,
   useSetStatus,
-  useDeleteOccurrence,
+  useResetOccurrence,
   useChoreMutations,
   useCategories,
 } from '../api/hooks';
@@ -38,7 +37,7 @@ export function SchedulePage() {
   const categories = useCategories();
   const setAssignment = useSetAssignment();
   const setStatus = useSetStatus();
-  const deleteOccurrence = useDeleteOccurrence();
+  const resetOccurrence = useResetOccurrence();
   const { create } = useChoreMutations();
 
   const [mealOcc, setMealOcc] = useState<OccurrenceDTO | null>(null);
@@ -71,10 +70,10 @@ export function SchedulePage() {
     }
   };
 
-  const handleDelete = async (occ: OccurrenceDTO, scope: DeleteScope) => {
+  const handleRefresh = async (occ: OccurrenceDTO) => {
     try {
-      await deleteOccurrence.mutateAsync({ occurrenceKey: occ.occurrenceKey, scope });
-      toast.success(t('deleted'));
+      await resetOccurrence.mutateAsync(occ.occurrenceKey);
+      toast.success(t('refreshed'));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('save_failed'));
     }
@@ -145,7 +144,7 @@ export function SchedulePage() {
               onAssign={handleAssign}
               onStatus={handleStatus}
               onOpenMeal={setMealOcc}
-              onDelete={handleDelete}
+              onRefresh={handleRefresh}
             />
           ) : (
             <DesktopGrid
@@ -154,7 +153,7 @@ export function SchedulePage() {
               onAssign={handleAssign}
               onStatus={handleStatus}
               onOpenMeal={setMealOcc}
-              onDelete={handleDelete}
+              onRefresh={handleRefresh}
             />
           )}
         </>
